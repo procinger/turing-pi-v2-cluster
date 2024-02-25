@@ -1,0 +1,24 @@
+---
+- name: Get K3S install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io/
+    timeout: 300
+    dest: /usr/local/bin/k3s-install.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Get latest kubectl version
+  run_once: true
+  ansible.builtin.uri:
+    url: https://dl.k8s.io/release/stable.txt
+    return_content: yes
+  register: kubectl_version
+
+- name: Download kubectl {{ kubectl_version.content }}
+  ansible.builtin.get_url:
+    url: https://dl.k8s.io/release/{{ kubectl_version.content }}/bin/linux/arm64/kubectl
+    dest: /usr/local/bin/kubectl
+    owner: root
+    group: root
+    mode: 0755

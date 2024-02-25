@@ -1,0 +1,32 @@
+---
+- name: Preparing Storage
+  block:
+  - name: Creating a filesystem on block device
+    community.general.filesystem:
+      fstype: "{{ storage.filesystem }}"
+      dev: "{{ storage.block_device }}"
+    when: storage.block_device is defined and storage.filesystem is defined
+
+  - name: Mount block device
+    ansible.posix.mount:
+      path: /mnt/nvme
+      src: "{{ storage.block_device }}"
+      fstype: "{{ storage.filesystem }}"
+      boot: true
+      opts: defaults
+      state: mounted
+
+  - name: Create Longhorn directory
+    ansible.builtin.file:
+      path: /mnt/nvme/longhorn
+      state: directory
+      mode: '0755'
+
+  - name: Create Longhorn Symlink
+    ansible.builtin.file:
+      src: /mnt/nvme/longhorn
+      dest: /var/lib/longhorn
+      owner: root
+      group: root
+      state: link
+  when: storage.block_device is defined and storage.filesystem is defined

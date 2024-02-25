@@ -1,0 +1,41 @@
+---
+- name: Setup K8S tooling and add github repository
+  when: inventory_hostname == groups['server'][0]
+  block:
+  - name: Install Helm
+    block:
+      - name: Get helm
+        ansible.builtin.unarchive:
+          src: https://get.helm.sh/helm-v3.14.2-linux-arm64.tar.gz
+          dest: /tmp
+          remote_src: yes
+
+      - name: move extracted helm
+        ansible.builtin.copy:
+          src: /tmp/linux-arm64/helm
+          dest: /usr/local/bin/helm
+          remote_src: true
+          mode: "u=rx,g=rx,o=rx"
+
+  - name: Add Argo CD helm repository
+    ansible.builtin.command:
+      cmd: helm repo add argo https://argoproj.github.io/argo-helm
+
+  - name: Install Argo CD helm chart
+    ansible.builtin.command:
+      cmd: helm upgrade --install --kubeconfig ~{{ ansible_user }}/.kube/config argo-cd argo/argo-cd --version 6.4.0 --namespace argo-cd --create-namespace
+
+  - name: Copy Argo-CD project settings
+    ansible.builtin.copy:
+      src: argo-cd
+      dest: ~{{ ansible_user }}
+      owner: "{{ ansible_user }}"
+      mode: '0755'
+
+  - name: Add Argo CD project
+    ansible.builtin.command:
+      cmd: kubectl --kubeconfig ~{{ ansible_user }}/.kube/config -n argo-cd apply -f argo-cd/argo-project.yaml
+
+  - name: Add Argo CD git repository
+    ansible.builtin.command:
+      cmd: kubectl --kubeconfig ~{{ ansible_user }}/.kube/config -n argo-cd apply -f argo-cd/argo-git-repository.yaml

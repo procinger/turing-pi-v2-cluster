@@ -1,0 +1,27 @@
+all:
+  children:
+    server:
+      hosts:
+        192.168.100.231:
+        192.168.100.232:
+        192.168.100.233:
+    agent:
+      hosts:
+        192.168.100.234:
+
+  vars:
+    ansible_user: ubuntu
+    hostname: turing
+    # If you are using the 4 nvme storage banks on the back,
+    # uncomment the storage section. this will format the block
+    # devices and add them to /etc/fstab
+    #storage:
+    #  block_device: /dev/nvme0n1
+    #  filesystem: ext4
+    k3s:
+      # create a random token with openssl
+      # openssl rand -hex 64
+      token: 7a397a68cff88a10e6251fe11047fee1f5c98af7f3a69b2a0e9dafc55577ce6e33686e6b098610b5480d335c3a1521296d0b92b01bc3a303b687ccca480de93f
+      endpoint: "{{ groups['server'][0] }}"
+      extra_server_args: ""
+      extra_agent_args: ""

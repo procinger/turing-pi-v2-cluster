@@ -1,0 +1,30 @@
+- name: Prepare nodes
+  hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: ubuntu
+    - role: storage
+    - role: k3s-preparation
+
+- name: Install K3S Server
+  hosts: server
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: k3s-server
+    - role: k3s-post
+
+- name: Install K3S Agent
+  hosts: agent
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: k3s-agent
+
+- name: Setup Argo CD
+  hosts: server
+  gather_facts: true
+  become: yes
+  roles:
+    - role: argo-cd
