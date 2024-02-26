@@ -12,7 +12,7 @@ spec:
   project: kubernetes
   source:
     path: ./kubernetes-services
-    repoURL: https://github.com/procinger/turring-pi-v2-cluster.git
+    repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
     targetRevision: main
   syncPolicy:
     automated:
