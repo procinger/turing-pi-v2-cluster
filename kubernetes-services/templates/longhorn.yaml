@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argo-cd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn
+  project: kubernetes
+  source:
+    chart: longhorn
+    repoURL: https://charts.longhorn.io/
+    targetRevision: v1.6.0 # Replace with the Longhorn version you'd like to install or upgrade to
+    helm:
+      values: |
+        preUpgradeChecker:
+          jobEnabled: false
+        enablePSP: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

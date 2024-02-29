@@ -26,5 +26,9 @@
   apt:
     pkg:
       - unattended-upgrades
+      - open-iscsi
+      - curl
+      - grep
+      - original-awk
     state: latest
     update_cache: true
