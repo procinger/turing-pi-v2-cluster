@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: system-upgrade-controller
+  namespace: argo-cd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: system-upgrade
+  project: kubernetes
+  sources:
+    - path: ./manifests
+      repoURL: https://github.com/rancher/system-upgrade-controller.git
+      targetRevision: v0.13.2
+    - path: ./kubernetes-services/additions/k3s-upgrade-controller
+      repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
+      targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
