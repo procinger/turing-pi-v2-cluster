@@ -10,28 +10,51 @@ spec:
     server: https://kubernetes.default.svc
     namespace: monitoring
   project: kubernetes
-  source:
-    chart: prometheus
-    repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 25.15.0
-    helm:
-      values: |
-        server:
-          persistentVolume:
-            storageClass: local-path
-          resources:
-            requests:
-              cpu: 500m
-              memory: 512Mi
-            limits:
-              cpu: 500m
-              memory: 1024Mi
+  sources:
+    - chart: kube-prometheus-stack
+      repoURL: https://prometheus-community.github.io/helm-charts
+      targetRevision: 56.19.0
+      helm:
+        values: |
+          prometheus:
+            prometheusSpec:
+              storageSpec:
+                volumeClaimTemplate:
+                  spec:
+                    storageClassName: longhorn
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 20Gi
+              serviceMonitorSelectorNilUsesHelmValues: false
+          alertmanager:
+            alertmanagerSpec:
+              storage:
+                volumeClaimTemplate:
+                  spec:
+                    storageClassName: longhorn
+                    accessModes: ["ReadWriteOnce"]
+                    resources:
+                      requests:
+                        storage: 5Gi
+          grafana:
+            persistence:
+              enabled: true
+              type: pvc
+              storageClassName: longhorn
+              accessModes: ["ReadWriteOnce"]
+              size: 1Gi
+    - path: ./kubernetes-services/additions/grafana
+      repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
+      targetRevision: main
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      #- Replace=true
+      - ServerSideApply=true
     retry:
       limit: 3
       backoff:
