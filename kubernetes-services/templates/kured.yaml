@@ -14,6 +14,15 @@ spec:
     chart: kured
     repoURL: https://kubereboot.github.io/charts
     targetRevision: 5.4.2
+    helm:
+      values: |
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "100m"
+          limits:
+            memory: "64Mi"
+            cpu: "250m"
   syncPolicy:
     automated:
       prune: true
