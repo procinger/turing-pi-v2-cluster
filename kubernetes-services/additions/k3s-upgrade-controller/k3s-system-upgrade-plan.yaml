@@ -10,10 +10,10 @@ spec:
   cordon: true
   nodeSelector:
     matchExpressions:
-      - key: node-role.kubernetes.io/master
+      - key: kubernetes.io/os
         operator: In
         values:
-          - 'true'
+          - 'linux'
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/k3s-upgrade
