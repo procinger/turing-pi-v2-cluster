@@ -17,20 +17,15 @@ spec:
     helm:
       values: |
         redis-ha:
-          enabled: "false"
-
+          enabled: false
         controller:
           replicas: "1"
-
         server:
           replicas: "1"
-
         repoServer:
           replicas: "1"
-
         applicationSet:
           replicaCount: "1"
-
         configs:
           params:
             "server.insecure": "true"
@@ -38,7 +33,7 @@ spec:
             "exec.enabled": "true"
             "timeout.reconciliation": "30s"
         dex:
-          enabled: "false"
+          enabled: false
   syncPolicy:
     automated:
       prune: true
