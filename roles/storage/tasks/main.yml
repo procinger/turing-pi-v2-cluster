@@ -1,17 +1,11 @@
 ---
 - name: Preparing Storage
+  when: storage.block_device is defined and not ansible_facts.mounts | selectattr('mount', '==', '/') | selectattr('device', '==', "storage.block_device") | length == 0
   block:
-  - name: Creating a filesystem on block device
-    community.general.filesystem:
-      fstype: "{{ storage.filesystem }}"
-      dev: "{{ storage.block_device }}"
 
-  - name: Mount block device
-    ansible.posix.mount:
-      path: /var/lib/longhorn
-      src: "{{ storage.block_device }}"
-      fstype: "{{ storage.filesystem }}"
-      boot: true
-      opts: defaults
-      state: mounted
-  when: storage.block_device is defined and storage.filesystem is defined
+  - name: Installing root filesystem on block device {{ storage.block_device }}
+    ansible.builtin.shell: |
+      yes | /usr/bin/ubuntu-rockchip-install {{ storage.block_device }}
+
+  - name: Reboot the server to run from {{ storage.block_device }}
+    ansible.builtin.reboot:
