@@ -3,8 +3,8 @@
   gather_facts: yes
   become: yes
   roles:
-    - role: ubuntu
     - role: storage
+    - role: ubuntu
     - role: k3s-preparation
 
 - name: Install K3S Server

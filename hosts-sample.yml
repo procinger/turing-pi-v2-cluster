@@ -12,12 +12,10 @@ all:
   vars:
     ansible_user: ubuntu
     hostname: turing
-    # If you are using the 4 nvme storage banks on the back,
-    # uncomment the storage section. this will format the block
-    # devices and add them to /etc/fstab
+    # If all 4 NVME storage banks are used,
+    # Ubuntu can be installed directly on the NVME storage and booted from there.
     #storage:
     #  block_device: /dev/nvme0n1
-    #  filesystem: ext4
     k3s:
       # create a random token with openssl
       # openssl rand -hex 64
