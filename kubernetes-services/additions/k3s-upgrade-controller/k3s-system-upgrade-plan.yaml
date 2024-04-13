@@ -4,7 +4,8 @@ metadata:
   name: k3s-upgrade
   namespace: system-upgrade
   annotations:
-    "helm.sh/hook": post-install
+    argocd.argoproj.io/sync-wave: "100"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   concurrency: 1
   cordon: true
