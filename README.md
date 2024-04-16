@@ -58,17 +58,30 @@ turing-04   Ready    <none>                      23h   v1.28.6+k3s2   192.168.10
 To avoid having to specify the path to your Kubeconfig each time using the `--kubeconfig` option, it can also be copied
 to the location `~/.kube/config`. By default, `kubectl` searches for a configuration there, if none has been specified.
 
+### Browser
+```
+http://<ip-of-a-node>/grafana
+http://<ip-of-a-node>/kiali
+http://<ip-of-a-node>/argocd
+http://<ip-of-a-node>/jaeger
+```
+
+### Kiali Sign in
+Kiali Sign in tokens have a short lifetime. Therefore, a new token must be created each time the Kiali Dashboard is needed
+```
+kubectl --namespace istio-system create token kiali                                                                                                                         
+
+eyJhbGciOiJSUzI1NiIsImtVbt_-7...snip...-aWjp3925QexVkfQuPP-qQ94AtoZGS2LQwvz7KcKKEVLUtfbKZeFie3B6EQO4iQ
+```
+
 ### Argo CD
 Argo CD creates a random password each time it is installed. Before you can connect to the web/cli interface, this must be determined.
 ``` 
 $ kubectl --kubeconfig ./kubeconfig --namespace argo-cd get secrets argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
 blcElfzg7sQ-i8e7 # <- admin password
 ```
-Now a tunnel to Argo CD on port 8080 can be established and used via port-forward
-```
-$ kubectl --kubeconfig ./kubeconfig port-forward --namespace argo-cd services/argo-cd-argocd-server 8080:80
-```
-You should now be able to connect with the browser to [http://localhost:8080](http://localhost:8080) and sign in to the Web UI with the username `admin`
+
+You should now be able to sign in to the Admin UI with the user name `admin`
 and the password determined from the secret.
 
 

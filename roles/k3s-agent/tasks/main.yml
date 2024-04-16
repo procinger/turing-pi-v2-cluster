@@ -3,4 +3,4 @@
   block:
     - name: Adding agent node
       ansible.builtin.command:
-        cmd: /usr/local/bin/k3s-install.sh agent --disable=traefik --server https://{{ k3s.endpoint }}:6443 --token {{ k3s.token }} {{ k3s.extra_agent_args }}
+        cmd: /usr/local/bin/k3s-install.sh agent --server https://{{ k3s.endpoint }}:6443 --token {{ k3s.token }} {{ k3s.extra_agent_args }}

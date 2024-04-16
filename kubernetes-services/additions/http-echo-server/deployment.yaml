@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-echo-server
+  labels:
+    app: http-echo-server
+    version: "33"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: http-echo-server
+  template:
+    metadata:
+      labels:
+        app: http-echo-server
+        version: "33"
+    spec:
+      containers:
+        - image: mendhak/http-https-echo:33
+          name: http-echo-server
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            timeoutSeconds: 10
+            periodSeconds: 10
+            failureThreshold: 10
+            httpGet:
+              path: /
+              port: 8080
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-echo-server
+  labels:
+    infra: http-echo-server
+    app: http-echo-server
+    version: "33"
+spec:
+  ports:
+    - name: tcp-tls
+      port: 443
+      targetPort: 8443
+    - name: tcp-non-tls
+      port: 80
+      targetPort: 8080
+  selector:
+    app: http-echo-server
