@@ -5,6 +5,14 @@ This involves installing 3 servers and 1 agent node.
 After the successful K3S installation, Argo CD is installed and linked to this repository using the [App of Apps pattern (cluster bootstrapping)](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/).
 This simplifies the handling of the various Helm charts, their configurations and updates.
 
+Includes tools and operators
+- Argo CD
+- Prometheus Kube Stack
+- Longhorn CSI
+- Istio & Gateway
+- http echo server
+- K3S System Upgrade Controller
+
 # Install
 ## Prerequisites
 * The RK1 Ubuntu server image must be flashed to the modules as described in the [Turing Pi Docs - Flashing OS](https://docs.turingpi.com/docs/turing-rk1-flashing-os).
