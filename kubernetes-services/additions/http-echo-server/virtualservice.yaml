@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: http-echo-server
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - istio-gateway/non-tls-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: http-echo-server
+            port:
+              number: 80

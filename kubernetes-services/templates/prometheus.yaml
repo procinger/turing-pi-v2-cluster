@@ -27,6 +27,7 @@ spec:
                       requests:
                         storage: 20Gi
               serviceMonitorSelectorNilUsesHelmValues: false
+              podMonitorSelectorNilUsesHelmValues: false
           alertmanager:
             alertmanagerSpec:
               storage:
@@ -38,13 +39,17 @@ spec:
                       requests:
                         storage: 5Gi
           grafana:
+            grafana.ini:
+              server:
+                root_url: /grafana/
+                serve_from_sub_path: true
             persistence:
               enabled: true
               type: pvc
               storageClassName: longhorn
               accessModes: ["ReadWriteOnce"]
               size: 1Gi
-    - path: ./kubernetes-services/additions/grafana
+    - path: ./kubernetes-services/additions/prometheus
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: main
   syncPolicy:
@@ -53,7 +58,6 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      #- Replace=true
       - ServerSideApply=true
     retry:
       limit: 3

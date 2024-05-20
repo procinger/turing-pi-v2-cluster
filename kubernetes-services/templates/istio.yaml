@@ -1,0 +1,90 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-system
+  namespace: argo-cd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  project: kubernetes
+  ignoreDifferences:
+    - kind: ValidatingWebhookConfiguration
+      group: admissionregistration.k8s.io
+      jsonPointers:
+        - /webhooks
+  sources:
+    - repoURL: https://istio-release.storage.googleapis.com/charts
+      chart: base
+      targetRevision: 1.22.0
+    - repoURL: https://istio-release.storage.googleapis.com/charts
+      chart: istiod
+      helm:
+        values: |
+          defaults:
+            global:
+              proxy:
+                tracer: "zipkin"
+              tracer:
+                zipkin:
+                  address: "istio-system-jaeger-collector.istio-system:9411"
+      targetRevision: 1.22.0
+    - repoURL: https://kiali.org/helm-charts
+      chart: kiali-server
+      targetRevision: 1.84.0
+      helm:
+        values: |
+          server:
+            web_root: /kiali
+          external_services:
+            prometheus:
+              url: "http://prometheus-kube-prometheus-prometheus.monitoring:9090/"
+            grafana:
+              enabled: true
+              in_cluster_url: "http://prometheus-grafana.monitoring:80"
+            tracing:
+              in_cluster_url: "http://istio-system-jaeger-query:16685/jaeger"
+              use_grpc: true
+            istio:
+              root_namespace: istio-system
+              component_status:
+                enabled: true
+                components:
+                - app_label: istiod
+                  is_core: true
+                - app_label: istio-gateway
+                  is_core: true
+                  is_proxy: true
+                  namespace: istio-gateway
+    - repoURL: https://jaegertracing.github.io/helm-charts
+      chart: jaeger
+      targetRevision: 3.0.7
+      helm:
+        values: |
+          query:
+            enabled: false
+          provisionDataStore:
+            cassandra: false
+          allInOne:
+            enabled: true
+            extraEnv:
+              - name: QUERY_BASE_PATH
+                value: /jaeger
+          storage:
+            type: memory
+          agent:
+            enabled: false
+          collector:
+            enabled: false
+    - path: ./kubernetes-services/additions/istio
+      repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
+      targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true

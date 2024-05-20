@@ -4,7 +4,7 @@
   block:
   - name: Running cluster-init on node {{ groups['server'][0] }}
     ansible.builtin.command:
-      cmd: /usr/local/bin/k3s-install.sh --cluster-init --token {{ k3s.token }} {{ k3s.extra_server_args }}
+      cmd: /usr/local/bin/k3s-install.sh --disable=traefik --cluster-init --token {{ k3s.token }} {{ k3s.extra_server_args }}
 
   - name: Wait until /etc/rancher/k3s/k3s.yaml is present before continuing
     ansible.builtin.wait_for:
@@ -19,4 +19,4 @@
   block:
     - name: Adding server nodes
       ansible.builtin.command:
-        cmd: /usr/local/bin/k3s-install.sh --server https://{{ k3s.endpoint }}:6443 --token {{ k3s.token }} {{ k3s.extra_server_args }}
+        cmd: /usr/local/bin/k3s-install.sh --disable=traefik --server https://{{ k3s.endpoint }}:6443 --token {{ k3s.token }} {{ k3s.extra_server_args }}
