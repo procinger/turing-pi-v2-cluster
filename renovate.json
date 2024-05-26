@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "assignees": ["procinger"],
+  "prHourlyLimit": 5,
+  "prConcurrentLimit": 5,
+  "kubernetes": {
+    "fileMatch": ["^kubernetes-services/.*\\.yaml$"]
+  },
+  "argocd": {
+    "fileMatch": ["^kubernetes-services/templates/.*\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "description": "respect weird docker versioning",
+      "versioning": "docker",
+      "matchDatasources": ["docker"]
+    }
+  ]
+}
