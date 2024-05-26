@@ -6,12 +6,15 @@ After the successful K3S installation, Argo CD is installed and linked to this r
 This simplifies the handling of the various Helm charts, their configurations and updates.
 
 Includes tools and operators
-- Argo CD
-- Prometheus Kube Stack
-- Longhorn CSI
-- Istio & Gateway
-- http echo server
-- K3S System Upgrade Controller
+- [Argo CD](https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd)
+- [Prometheus Kube Stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+- [Longhorn CSI](https://github.com/longhorn/longhorn)
+- [Istio & Gateway](https://github.com/istio/istio/tree/master/manifests/charts)
+- [http echo server](https://github.com/mendhak/docker-http-https-echo)
+- [K3S System Upgrade Controller](https://github.com/rancher/system-upgrade-controller/tree/master/manifests)
+- [Jaeger Tracing](https://github.com/jaegertracing/helm-charts)
+- [Kiali](https://github.com/kiali/helm-charts/tree/master/kiali-server)
+- [Bitnami Sealed Secrets](https://github.com/bitnami/charts/tree/main/bitnami/sealed-secrets)
 
 # Install
 ## Prerequisites
@@ -92,6 +95,54 @@ blcElfzg7sQ-i8e7 # <- admin password
 You should now be able to sign in to the Admin UI with the user name `admin`
 and the password determined from the secret.
 
+### Bitnami Sealed Secrets
+Sealed Secrets are used to create encrypted Kubernetes Secrets. Before such a secret can be created, the
+public certificate must be exported from the controller
+```
+kubeseal --kubeconfig ./kubeconfig --namespace kube-system  --controller-name sealed-secrets --fetch-cert > public-key-cert.pem
+```
+After the public certificate has been successfully obtained, Kubernetes Secrets can be encrypted.
+
+#### Create a secret
+```
+echo "
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+stringData:
+  password: 'v3rySekur'" > secret.yaml
+```
+#### Encrypt it
+```
+kubeseal --kubeconfig ./kubeconfig  --scope cluster-wide --namespace kube-system  --controller-name sealed-secrets --format=yaml --cert=public-key-cert.pem  < secret.yaml > secret-sealed.yaml
+``` 
+#### expected output
+```
+cat secret-sealed.yaml
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  annotations:
+    sealedsecrets.bitnami.com/cluster-wide: "true"
+  creationTimestamp: null
+  name: mysecret
+spec:
+  encryptedData:
+    password: AgAiB0sFG+kBfqvR5NWfmsqbHrt2uvZMeGx3DlopOWHJjeZ3WhukBNGbAb3IdBISFXdxiprnudBk1dvP3DPKdCcvqisq8kfE2+NzNOMn40/J9JtSopIJBLF3rK3cVUhXDL2bXvDEwChKsLQyi0gOw7bqObSU3t86O1a2/XK8+iyTnJh/p6oKo6rtGNTMOUOVxYoGwfcvV+yoXEqovO2MWfgi2N9SEPIwzPmDiDXo+Tbfue2EQY4qSAyK8UoddzjMec07EDod3tLfJBT+lJ8BhAHJQJvYIC7UD6izUAi4rvZ/iLaDvt7DsPyhGVD3IT3aH48zkrg7uDxJVeVMYQyJvxLTdcQPfMYUB0eKKlL0MZioGU5jM0aoTLVFh2iZDF4d65bTEszG+NfF4lGq3pjAtA2zlJTFmdUXfoLy1fWqvFPo4TvdjEK2uBXWr2TjyvGMONOZjzoJ+GfGytLVVn4+ZIJofKDmQxogy8Tcdv5HvEahJwoy5pVRrHH8qdCFFk+hVLCdDUxP784XiQcCtCqR1A9Rb9oZhtG5CIRYqxmgEqo/aamSIwCPPjFEoEUaCyojmBGU7CTL3mjFBkEYHNu8vP37xAPCcV/X+EAVN4PpPgQwAlkGIUGv1Y9/XC5qERVaYrcBHquMHKYCYHrKeYuAlYrG8qpDG7gvXTIYjWpvZW76EpeCImouzbKP4yAdXqyh730ZBhYOgaBJfkg=
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
+      creationTimestamp: null
+      name: mysecret
+    type: Opaque
+
+```
+#### Bring your own certificates
+It is also possible to create your own certificates and use them to encrypt secrets, the procedure is [explained here](https://github.com/bitnami-labs/sealed-secrets/blob/main/docs/bring-your-own-certificates.md).
 
 ---
 
