@@ -38,6 +38,10 @@ spec:
         values: |
           server:
             web_root: /kiali
+          kiali_feature_flags:
+            validations:
+              ignore: ["KIA1106"]
+              skip_wildcard_gateway_hosts: true
           external_services:
             prometheus:
               url: "http://prometheus-kube-prometheus-prometheus.monitoring:9090/"

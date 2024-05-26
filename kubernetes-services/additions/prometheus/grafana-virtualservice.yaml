@@ -11,6 +11,8 @@ spec:
     - match:
         - uri:
             prefix: /grafana/
+        - uri:
+            exact: /grafana
       route:
         - destination:
             host: prometheus-grafana
