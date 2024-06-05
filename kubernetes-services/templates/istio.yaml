@@ -24,6 +24,9 @@ spec:
       helm:
         values: |
           defaults:
+            pilot:
+              autoscaleEnabled: false
+              replicaCount: 2
             global:
               proxy:
                 tracer: "zipkin"
