@@ -17,6 +17,15 @@
       "description": "respect weird docker versioning",
       "versioning": "docker",
       "matchDatasources": ["docker"]
+    },
+    {
+      "description": "grouping of istio helm charts",
+      "groupName": "istio helm charts",
+      "matchPackageNames": [
+        "istiod",
+        "gateway",
+        "base"
+      ]
     }
   ]
 }
