@@ -1,0 +1,44 @@
+name: Helm Chart Changes
+on:
+  pull_request:
+
+jobs:
+  test-helm-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: yokawasa/action-setup-kube-tools@v0.11.1
+        with:
+          kubectl: '1.29.0'
+          helm: '3.15.1'
+      - uses: mikefarah/yq@v4.44.1
+      - uses: tj-actions/changed-files@v44
+        id: changed-argo-apps
+        with:
+          files_yaml: |
+            apps:
+              - kubernetes-services/templates/**
+      - name: Install kubeseal cli
+        run: |
+          KUBESEAL_VERSION=$(curl -s https://api.github.com/repos/bitnami-labs/sealed-secrets/tags | jq -r '.[0].name' | cut -c 2-)
+
+          # Check if the version was fetched successfully
+          if [ -z "$KUBESEAL_VERSION" ]; then
+              echo "Failed to fetch the latest KUBESEAL_VERSION"
+              exit 1
+          fi
+
+          wget "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz"
+          mkdir -p bin
+          tar -xvzf kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz kubeseal
+          mv kubeseal bin/kubeseal
+      - name: Test Helm Chart
+        if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
+        env:
+          APPS_ALL_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.apps_all_changed_files }}
+        run: |
+          export PATH=$PATH:bin
+          echo "List all the files that have changed: $APPS_ALL_CHANGED_FILES"
+          test/bats/bin/bats test/$(basename ${APPS_ALL_CHANGED_FILES} | sed 's/.yaml/.bats/')
