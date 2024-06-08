@@ -1,6 +1,9 @@
 name: Helm Chart Changes
 on:
   pull_request:
+    paths:
+      - kubernetes-services/**
+      - test/**
 
 jobs:
   test-helm-chart:
