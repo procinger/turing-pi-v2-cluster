@@ -16,7 +16,7 @@ jobs:
         with:
           kubectl: '1.29.0'
           helm: '3.15.1'
-      - uses: mikefarah/yq@v4.44.1
+      - uses: mikefarah/yq@v4.44.2
       - uses: tj-actions/changed-files@v44
         id: changed-argo-apps
         with:
