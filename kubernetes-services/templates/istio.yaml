@@ -36,7 +36,7 @@ spec:
       targetRevision: 1.22.1
     - repoURL: https://kiali.org/helm-charts
       chart: kiali-server
-      targetRevision: 1.85.0
+      targetRevision: 1.86.2
       helm:
         values: |
           server:
