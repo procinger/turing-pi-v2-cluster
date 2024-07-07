@@ -2,3 +2,8 @@
 .vscode/*
 kubeconfig
 hosts.yml
+vendor/*
+tls.crt
+tls.key
+public-key-cert.pem
+**/kind-logs
