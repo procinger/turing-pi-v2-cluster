@@ -23,6 +23,10 @@ jobs:
           files_yaml: |
             apps:
               - kubernetes-services/templates/**
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: go.sum
       - name: Install kubeseal cli
         run: |
           KUBESEAL_VERSION=$(curl -s https://api.github.com/repos/bitnami-labs/sealed-secrets/tags | jq -r '.[0].name' | cut -c 2-)
@@ -44,4 +48,4 @@ jobs:
         run: |
           export PATH=$PATH:bin
           echo "List all the files that have changed: $APPS_ALL_CHANGED_FILES"
-          test/bats/bin/bats test/$(basename ${APPS_ALL_CHANGED_FILES} | sed 's/.yaml/.bats/')
+          go test -v ./test -run $(basename ${APPS_ALL_CHANGED_FILES} .yaml |  sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
