@@ -6,6 +6,7 @@
   "assignees": ["procinger"],
   "prHourlyLimit": 5,
   "prConcurrentLimit": 5,
+  "enabledManagers": ["kubernetes", "argocd"],
   "kubernetes": {
     "fileMatch": ["^kubernetes-services/.*\\.yaml$"]
   },
