@@ -1,0 +1,163 @@
+package test
+
+import (
+	"context"
+	"fmt"
+	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
+	"sigs.k8s.io/e2e-framework/klient/wait"
+	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
+	"sigs.k8s.io/e2e-framework/pkg/envconf"
+	"test/test/pkg/helper"
+	"time"
+)
+
+func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.Application, argoAppUpdate *applicationV1Alpha1.Application) error {
+	currGitBranch, err := helper.GetCurrentGitBranch()
+	if err != nil {
+		return err
+	}
+
+	if currGitBranch != "main" {
+		*argoAppUpdate, err = helper.GetArgoApplication(applicationYaml)
+		err = helper.CheckoutGitBranch("main")
+		if err != nil {
+			return err
+		}
+		*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
+		if err != nil {
+			return err
+		}
+	} else {
+		*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func DeployHelmChart(argoApplication applicationV1Alpha1.Application,  cfg *envconf.Config) error {
+	helmMgr := helper.GetHelmManager(cfg)
+
+	var source applicationV1Alpha1.ApplicationSource
+	for _, source = range argoApplication.Spec.Sources {
+		if source.Chart == "" {
+			continue
+		}
+		err := helper.AddHelmRepository(helmMgr, source.RepoURL)
+		if err != nil {
+			return err
+		}
+
+		err = helper.InstallHelmChart(helmMgr, source, argoApplication.Spec.Destination.Namespace)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func UpgradeHelmChart(argoApplication applicationV1Alpha1.Application, cfg *envconf.Config) error {
+	helmMgr := helper.GetHelmManager(cfg)
+
+	var source applicationV1Alpha1.ApplicationSource
+	for _, source = range argoApplication.Spec.Sources {
+		if source.Chart == "" {
+			continue
+		}
+
+		err := helper.UpgradeHelmChart(helmMgr, source, argoApplication.Spec.Destination.Namespace)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func getClient() (*kubernetes.Clientset, error) {
+	cfg := envconf.Config{}
+	kubeConfig := cfg.Client().RESTConfig()
+	clientSet, err := kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return clientSet, nil
+}
+
+func CheckPodsBecameReady(argoApplication applicationV1Alpha1.Application) error {
+	cfg := envconf.Config{}
+	podList := corev1.PodList{}
+	var source applicationV1Alpha1.ApplicationSource
+
+	for _, source = range argoApplication.Spec.Sources {
+		if source.Chart == "" {
+			continue
+		}
+
+		err := cfg.Client().Resources(argoApplication.Spec.Destination.Namespace).
+			List(context.TODO(), &podList, resources.WithLabelSelector(
+				labels.FormatLabels(map[string]string{
+					"helm.sh/chart": fmt.Sprintf("%s-%s",
+						source.Chart,
+						source.TargetRevision,
+					),
+				})),
+			)
+
+		if err != nil {
+			return err
+		}
+
+		for i := range podList.Items {
+			if podList.Items[i].OwnerReferences[0].Kind == "Job" {
+				continue
+			}
+
+			err = wait.For(
+				conditions.New(cfg.Client().Resources().WithNamespace(argoApplication.Spec.Destination.Namespace)).
+					PodReady(&podList.Items[i]), wait.WithTimeout(time.Minute*10),
+			)
+
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func CheckJobsCompleted(argoApplication applicationV1Alpha1.Application, ctx context.Context) error {
+	clientSet, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	jobsList, err := clientSet.BatchV1().Jobs(argoApplication.Spec.Destination.Namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	cfg := envconf.Config{}
+	for i := range jobsList.Items {
+		err = wait.For(
+			conditions.New(cfg.Client().Resources().WithNamespace(argoApplication.Spec.Destination.Namespace)).
+				JobCompleted(&jobsList.Items[i]), wait.WithTimeout(time.Minute*10),
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
