@@ -16,12 +16,13 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 	"test/test/pkg/helper"
+	"test/test/pkg/test"
 	"testing"
 	"time"
 )
 
 func TestSealedSecrets(t *testing.T) {
-	err := helper.PrepareTest(
+	err := test.PrepareTest(
 		"../kubernetes-services/templates/sealed-secrets.yaml",
 		&argoAppCurrent,
 		&argoAppUpdate,
@@ -38,7 +39,7 @@ func TestSealedSecrets(t *testing.T) {
 			err := helper.AddHelmRepository(helmMgr, argoAppCurrent.Spec.Source.RepoURL)
 			require.NoError(t, err)
 
-			err = helper.InstallHelmChart(helmMgr, argoAppCurrent.Spec.Source, argoAppCurrent.Spec.Destination.Namespace)
+			err = helper.InstallHelmChart(helmMgr, *argoAppCurrent.Spec.Source, argoAppCurrent.Spec.Destination.Namespace)
 			require.NoError(t, err)
 
 			return ctx
@@ -94,9 +95,13 @@ func TestSealedSecrets(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Sealed Secrets Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			if argoAppCurrent.Spec.Source.TargetRevision == argoAppUpdate.Spec.Source.TargetRevision {
+				t.SkipNow()
+			}
+
 			helmMgr := helper.GetHelmManager(cfg)
 
-			err = helper.UpgradeHelmChart(helmMgr, argoAppUpdate.Spec.Source, argoAppUpdate.Spec.Destination.Namespace)
+			err = helper.UpgradeHelmChart(helmMgr, *argoAppUpdate.Spec.Source, argoAppUpdate.Spec.Destination.Namespace)
 			require.NoError(t, err)
 
 			return ctx
