@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
@@ -152,6 +154,37 @@ func CheckJobsCompleted(argoApplication applicationV1Alpha1.Application, ctx con
 		err = wait.For(
 			conditions.New(cfg.Client().Resources().WithNamespace(argoApplication.Spec.Destination.Namespace)).
 				JobCompleted(&jobsList.Items[i]), wait.WithTimeout(time.Minute*10),
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func DeploymentBecameReady(argoApplication applicationV1Alpha1.Application) error {
+	clientSet, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	deploymentList, err := clientSet.AppsV1().Deployments(argoApplication.Spec.Destination.Namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for i := range deploymentList.Items {
+		var isDeploymentDone = func(object k8s.Object) bool {
+			dep := object.(*appsv1.Deployment)
+			return dep.Status.Replicas == dep.Status.ReadyReplicas
+		}
+
+		cfg := envconf.Config{}
+		err = wait.For(
+			conditions.New(cfg.Client().Resources()).ResourceMatch(&deploymentList.Items[i], isDeploymentDone),
+			wait.WithTimeout(time.Minute*5),
 		)
 
 		if err != nil {

@@ -47,6 +47,14 @@ func TestArgoCd(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			if argoAppUpdate.Spec.Source == nil {
+				t.SkipNow()
+			}
+
+			if argoAppUpdate.Spec.Source.TargetRevision == argoAppCurrent.Spec.Source.TargetRevision {
+				t.SkipNow()
+			}
+
 			err := test.UpgradeHelmChart(argoAppUpdate, cfg)
 			assert.NoError(t, err)
 
