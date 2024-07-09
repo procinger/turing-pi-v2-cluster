@@ -74,8 +74,8 @@ func TestSealedSecrets(t *testing.T) {
 					List(context.TODO(), &podList, resources.WithLabelSelector(
 					labels.FormatLabels(map[string]string{
 						"helm.sh/chart": fmt.Sprintf("%s-%s",
-							argoAppUpdate.Spec.Source.Chart,
-							argoAppUpdate.Spec.Source.TargetRevision,
+							argoAppCurrent.Spec.Source.Chart,
+							argoAppCurrent.Spec.Source.TargetRevision,
 						),
 					})),
 				)
@@ -95,7 +95,11 @@ func TestSealedSecrets(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Sealed Secrets Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if argoAppCurrent.Spec.Source.TargetRevision == argoAppUpdate.Spec.Source.TargetRevision {
+			if argoAppUpdate.Spec.Source == nil {
+				t.SkipNow()
+			}
+
+			if argoAppUpdate.Spec.Source.TargetRevision == argoAppCurrent.Spec.Source.TargetRevision {
 				t.SkipNow()
 			}
 
