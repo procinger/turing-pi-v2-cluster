@@ -2,6 +2,7 @@ package helper
 
 import (
 	"os/exec"
+	"strings"
 )
 
 func GetCurrentGitBranch() (string, error) {
@@ -11,7 +12,7 @@ func GetCurrentGitBranch() (string, error) {
 		return "", err
 	}
 
-	return string(currGitBranch), nil
+	return strings.TrimSuffix(string(currGitBranch), "\n"), nil
 }
 
 func CheckoutGitBranch(branch string) error {

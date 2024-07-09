@@ -22,21 +22,23 @@ func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.App
 		return err
 	}
 
-	if currGitBranch != "main" {
-		*argoAppUpdate, err = helper.GetArgoApplication(applicationYaml)
-		err = helper.CheckoutGitBranch("main")
-		if err != nil {
-			return err
-		}
+	if currGitBranch == "main" {
 		*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
 		if err != nil {
 			return err
 		}
-	} else {
-		*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
-		if err != nil {
-			return err
-		}
+
+		return nil
+	}
+
+	*argoAppUpdate, err = helper.GetArgoApplication(applicationYaml)
+	err = helper.CheckoutGitBranch("main")
+	if err != nil {
+		return err
+	}
+	*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
+	if err != nil {
+		return err
 	}
 
 	return nil
