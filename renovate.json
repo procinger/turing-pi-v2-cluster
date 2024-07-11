@@ -15,6 +15,11 @@
   },
   "packageRules": [
     {
+      "matchManagers": ["argocd"],
+      "enabled": true,
+      "automerge": true
+    },
+    {
       "description": "respect weird docker versioning",
       "versioning": "docker",
       "matchDatasources": ["docker"]
