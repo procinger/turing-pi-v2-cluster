@@ -45,7 +45,12 @@ jobs:
         if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
         env:
           APPS_ALL_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.apps_all_changed_files }}
-        run: |
+        run: |          
+          if [ ! -f "test/$(basename ${APPS_ALL_CHANGED_FILES} | sed -E 's/-([a-z])/_\1/g' | sed 's/.yaml/_test.go/')" ]; then
+            echo "Test coverage not found. bye!"
+            exit 2
+          fi
+          
           export PATH=$PATH:bin
           echo "List all the files that have changed: $APPS_ALL_CHANGED_FILES"
           go test -v ./test -run $(basename ${APPS_ALL_CHANGED_FILES} .yaml |  sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
