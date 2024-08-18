@@ -17,7 +17,7 @@ spec:
         version: "33"
     spec:
       containers:
-        - image: mendhak/http-https-echo:33
+        - image: mendhak/http-https-echo:34
           name: http-echo-server
           ports:
             - containerPort: 8443
