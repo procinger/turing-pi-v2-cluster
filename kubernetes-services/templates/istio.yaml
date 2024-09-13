@@ -18,7 +18,7 @@ spec:
   sources:
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: base
-      targetRevision: 1.22.3
+      targetRevision: 1.23.1
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: istiod
       helm:
@@ -33,7 +33,7 @@ spec:
               tracer:
                 zipkin:
                   address: "istio-system-jaeger-collector.istio-system:9411"
-      targetRevision: 1.22.3
+      targetRevision: 1.23.1
     - repoURL: https://kiali.org/helm-charts
       chart: kiali-server
       targetRevision: 1.85.0
