@@ -13,7 +13,7 @@ spec:
   sources:
     - path: ./manifests
       repoURL: https://github.com/rancher/system-upgrade-controller.git
-      targetRevision: v0.13.2
+      targetRevision: v0.14.2
     - path: ./kubernetes-services/additions/k3s-upgrade-controller
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: main
