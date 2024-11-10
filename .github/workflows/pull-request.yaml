@@ -17,26 +17,40 @@ jobs:
           kubectl: '1.29.0'
           helm: '3.15.1'
       - uses: mikefarah/yq@v4.44.2
-      - uses: tj-actions/changed-files@v44
+      - uses: tj-actions/changed-files@v45.0.4
         id: changed-argo-apps
         with:
           files_yaml: |
             apps:
               - kubernetes-services/templates/**
+              - '!kubernetes-services/templates/istio**.yaml'
+            istio:
+              - kubernetes-services/templates/istio**
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
           cache-dependency-path: go.sum
-      - name: Test Helm Chart
+      - name: Test Common Helm Chart
         if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
         env:
-          APPS_ALL_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.apps_all_changed_files }}
-        run: |          
-          if [ ! -f "test/$(basename ${APPS_ALL_CHANGED_FILES} | sed -E 's/-([a-z])/_\1/g' | sed 's/.yaml/_test.go/')" ]; then
-            echo "Test coverage not found. bye!"
-            exit 2
-          fi
+          HELM_CHARTS_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.apps_all_changed_files }}
+        run: |
+          echo "List all helm charts that have changed"
+          for chart in ${HELM_CHARTS_CHANGED_FILES}; do
+            echo "${chart} was changed"
+            
+            test="test/$(basename ${chart} | sed -E 's/-([a-z])/_\1/g' | sed 's/.yaml/_test.go/')"
+            if [ ! -f ${test} ]; then
+              echo "Test coverage ${test} not found. bye!"
+              exit 2
+            fi
+          done
           
           export PATH=$PATH:bin
-          echo "List all the files that have changed: $APPS_ALL_CHANGED_FILES"
-          go test -v ./test -run $(basename ${APPS_ALL_CHANGED_FILES} .yaml |  sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
+          go test -v ./test -run $(basename ${HELM_CHARTS_CHANGED_FILES} .yaml |  sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
+      - name: Test Istio Helm Chart
+        if: steps.changed-argo-apps.outputs.istio_any_changed == 'true'
+        env:
+          HELM_CHARTS_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.istio_all_changed_files }}
+        run: |
+          go test -v ./test -run TestIstio

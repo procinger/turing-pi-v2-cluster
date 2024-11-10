@@ -4,7 +4,6 @@ import (
 	"fmt"
 	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"os"
-	"path"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 )
@@ -13,11 +12,10 @@ func GetHelmManager(cfg *envconf.Config) *helm.Manager {
 	return helm.New(cfg.KubeconfigFile())
 }
 
-func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string) error {
-	helmRepoName := path.Base(helmRepoUrl)
+func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string, helmChartName string) error {
 	err := helmMgr.RunRepo(helm.WithArgs(
-		"add",
-		helmRepoName,
+		"add --force-update",
+		helmChartName,
 		helmRepoUrl,
 	))
 	if err != nil {
@@ -27,19 +25,12 @@ func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string) error {
 	return nil
 }
 
-func getHelmRepoName(helmRepoUrl string) string {
-	return path.Base(helmRepoUrl)
-}
-
 func getFullChartName(helmRepoName string, helmChart string) string {
 	return fmt.Sprintf("%s/%s", helmRepoName, helmChart)
 }
 
 func UpgradeHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alpha1.ApplicationSource, namespace string) error {
-	helmRepoUrl := applicationSource.RepoURL
-	helmRepoName := getHelmRepoName(helmRepoUrl)
-
-	fullChartName := getFullChartName(helmRepoName, applicationSource.Chart)
+	fullChartName := getFullChartName(applicationSource.Chart, applicationSource.Chart)
 	if applicationSource.Helm != nil {
 		err := helmValuesToFile(applicationSource)
 		if err != nil {
@@ -51,6 +42,7 @@ func UpgradeHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alph
 			helm.WithNamespace(namespace),
 			helm.WithChart(fullChartName),
 			helm.WithVersion(applicationSource.TargetRevision),
+			helm.WithArgs("--install"),
 			helm.WithArgs("-f", "/tmp/helm-values.txt"),
 		)
 		if err != nil {
@@ -62,6 +54,7 @@ func UpgradeHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alph
 			helm.WithNamespace(namespace),
 			helm.WithChart(fullChartName),
 			helm.WithVersion(applicationSource.TargetRevision),
+			helm.WithArgs("--install"),
 		)
 		if err != nil {
 			return err
@@ -91,10 +84,7 @@ func helmValuesToFile(applicationSource applicationV1Alpha1.ApplicationSource) e
 }
 
 func InstallHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alpha1.ApplicationSource, namespace string) error {
-	helmRepoUrl := applicationSource.RepoURL
-	helmRepoName := getHelmRepoName(helmRepoUrl)
-
-	fullChartName := getFullChartName(helmRepoName, applicationSource.Chart)
+	fullChartName := getFullChartName(applicationSource.Chart, applicationSource.Chart)
 	if applicationSource.Helm != nil {
 		err := helmValuesToFile(applicationSource)
 		if err != nil {
