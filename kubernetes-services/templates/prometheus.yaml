@@ -39,6 +39,8 @@ spec:
                       requests:
                         storage: 5Gi
           grafana:
+            deploymentStrategy:
+              type: Recreate
             grafana.ini:
               server:
                 root_url: /grafana/
