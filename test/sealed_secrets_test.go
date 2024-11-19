@@ -36,7 +36,7 @@ func TestSealedSecrets(t *testing.T) {
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			helmMgr := helper.GetHelmManager(cfg)
 
-			err := helper.AddHelmRepository(helmMgr, argoAppCurrent.Spec.Source.RepoURL)
+			err := helper.AddHelmRepository(helmMgr, argoAppCurrent.Spec.Source.RepoURL, argoAppCurrent.Spec.Source.Chart)
 			require.NoError(t, err)
 
 			err = helper.InstallHelmChart(helmMgr, *argoAppCurrent.Spec.Source, argoAppCurrent.Spec.Destination.Namespace)

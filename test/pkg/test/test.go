@@ -38,11 +38,17 @@ func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.App
 	if err != nil {
 		return err
 	}
+
 	*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
 	if err != nil {
 		return err
 	}
-
+/*
+	err = helper.CheckoutGitBranch(currGitBranch)
+	if err != nil {
+		return err
+	}
+*/
 	return nil
 }
 
@@ -54,7 +60,8 @@ func DeployHelmChart(argoApplication applicationV1Alpha1.Application,  cfg *envc
 		if source.Chart == "" {
 			continue
 		}
-		err := helper.AddHelmRepository(helmMgr, source.RepoURL)
+
+		err := helper.AddHelmRepository(helmMgr, source.RepoURL, source.Chart)
 		if err != nil {
 			return err
 		}

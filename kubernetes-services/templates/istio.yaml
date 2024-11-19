@@ -18,27 +18,31 @@ spec:
   sources:
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: base
-      targetRevision: 1.23.3
+      targetRevision: 1.24.0
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: istiod
       helm:
         values: |
-          defaults:
-            pilot:
-              autoscaleEnabled: false
-              replicaCount: 2
-            global:
-              proxy:
-                tracer: "zipkin"
-              tracer:
+          pilot:
+            autoscaleEnabled: false
+            replicaCount: 2
+          global:
+            proxy:
+              tracer: "zipkin"
+          meshConfig:
+            defaultConfig:
+              tracing:
                 zipkin:
                   address: "istio-system-jaeger-collector.istio-system:9411"
-      targetRevision: 1.23.3
+      targetRevision: 1.24.0
     - repoURL: https://kiali.org/helm-charts
       chart: kiali-server
       targetRevision: 1.89.7
       helm:
         values: |
+          clustering:
+            autodetect_secrets:
+              enabled: false
           server:
             web_root: /kiali
           kiali_feature_flags:
