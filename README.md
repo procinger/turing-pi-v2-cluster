@@ -15,6 +15,7 @@ Includes tools and operators
 - [Jaeger Tracing](https://github.com/jaegertracing/helm-charts)
 - [Kiali](https://github.com/kiali/helm-charts/tree/master/kiali-server)
 - [Bitnami Sealed Secrets](https://github.com/bitnami/charts/tree/main/bitnami/sealed-secrets)
+- [Kured](https://github.com/kubereboot/kured)
 
 # Install
 ## Prerequisites
@@ -95,6 +96,16 @@ blcElfzg7sQ-i8e7 # <- admin password
 You should now be able to sign in to the Admin UI with the user name `admin`
 and the password determined from the secret.
 
+If you prefer to use the terminal, you can log in with the argocd cli tool using the following command
+```
+$ argocd login <ip-of-a-node>:80 --grpc-web-root-path argocd
+```
+
+### Grafana
+In the Prometheus Kube stack, the credentials have not been changed and are default. You can log in to the dashboard 
+using the username `admin` and password `prom-operator`.
+![title](images/grafana.png)
+
 ### Bitnami Sealed Secrets
 Sealed Secrets are used to create encrypted Kubernetes Secrets. Before such a secret can be created, the
 public certificate must be exported from the controller
@@ -146,4 +157,4 @@ It is also possible to create your own certificates and use them to encrypt secr
 
 ---
 
-![title](docs/turing.jpg)
+![title](images/turing.jpg)
