@@ -63,7 +63,7 @@ func TestPrometheus(t *testing.T) {
 	feature := features.
 		New("Deploying Prometheus Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmChart(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(argoAppCurrent, cfg)
 			require.NoError(t, err)
 
 			return ctx

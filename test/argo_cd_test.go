@@ -24,7 +24,7 @@ func TestArgoCd(t *testing.T) {
 	install := features.
 		New("Deploying Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmChart(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(argoAppCurrent, cfg)
 			require.NoError(t, err)
 
 			return ctx

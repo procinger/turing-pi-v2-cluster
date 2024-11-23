@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
+	"reflect"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
@@ -34,26 +35,52 @@ func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.App
 	}
 
 	*argoAppUpdate, err = helper.GetArgoApplication(applicationYaml)
-	err = helper.CheckoutGitBranch("main")
 	if err != nil {
 		return err
 	}
 
-	*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
+	*argoAppCurrent, err = helper.GetArgoApplicationFromGit(applicationYaml)
 	if err != nil {
 		return err
 	}
-/*
-	err = helper.CheckoutGitBranch(currGitBranch)
-	if err != nil {
-		return err
+
+	if reflect.DeepEqual(argoAppCurrent, argoAppUpdate) {
+		*argoAppUpdate = applicationV1Alpha1.Application{}
 	}
-*/
+
 	return nil
 }
 
-func DeployHelmChart(argoApplication applicationV1Alpha1.Application,  cfg *envconf.Config) error {
+func deployHelmChart(applicationSource applicationV1Alpha1.ApplicationSource,namespace string, cfg *envconf.Config) error {
 	helmMgr := helper.GetHelmManager(cfg)
+
+	err := helper.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
+	if err != nil {
+		return err
+	}
+
+	err = helper.InstallHelmChart(helmMgr, applicationSource, namespace)
+	if err != nil {
+		return err
+	}
+
+
+	return nil
+}
+
+func DeployHelmCharts(argoApplication applicationV1Alpha1.Application,  cfg *envconf.Config) error {
+	if argoApplication.Spec.Source != nil {
+		if argoApplication.Spec.Source.Chart == "" {
+			return nil
+		}
+
+		err := deployHelmChart(*argoApplication.Spec.Source, argoApplication.Spec.Destination.Namespace, cfg)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
 
 	var source applicationV1Alpha1.ApplicationSource
 	for _, source = range argoApplication.Spec.Sources {
@@ -61,12 +88,7 @@ func DeployHelmChart(argoApplication applicationV1Alpha1.Application,  cfg *envc
 			continue
 		}
 
-		err := helper.AddHelmRepository(helmMgr, source.RepoURL, source.Chart)
-		if err != nil {
-			return err
-		}
-
-		err = helper.InstallHelmChart(helmMgr, source, argoApplication.Spec.Destination.Namespace)
+		err := deployHelmChart(source, argoApplication.Spec.Destination.Namespace, cfg)
 		if err != nil {
 			return err
 		}

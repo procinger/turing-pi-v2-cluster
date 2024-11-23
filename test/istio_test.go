@@ -45,10 +45,10 @@ func TestIstio(t *testing.T) {
 	feature := features.
 		New("Deploying Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmChart(istioAppCurrent, cfg)
+			err = test.DeployHelmCharts(istioAppCurrent, cfg)
 			require.NoError(t, err)
 
-			err = test.DeployHelmChart(istioGatewayAppCurrent, cfg)
+			err = test.DeployHelmCharts(istioGatewayAppCurrent, cfg)
 			require.NoError(t, err)
 
 			return ctx
@@ -108,7 +108,7 @@ func TestIstio(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if istioAppUpdate.Spec.Sources == nil {
+			if istioAppUpdate.Spec.Sources == nil && istioGatewayAppUpdate.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
