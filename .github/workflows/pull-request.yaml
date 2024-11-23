@@ -26,6 +26,8 @@ jobs:
               - '!kubernetes-services/templates/istio**.yaml'
             istio:
               - kubernetes-services/templates/istio**
+            go_test:
+              - test/**_test.go
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
@@ -44,13 +46,27 @@ jobs:
               echo "Test coverage ${test} not found. bye!"
               exit 2
             fi
-          done
           
-          export PATH=$PATH:bin
-          go test -v ./test -run $(basename ${HELM_CHARTS_CHANGED_FILES} .yaml |  sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
+            go test -v ./test -run $(basename ${HELM_CHARTS_CHANGED_FILES} .yaml |  sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
+          done
       - name: Test Istio Helm Chart
         if: steps.changed-argo-apps.outputs.istio_any_changed == 'true'
         env:
           HELM_CHARTS_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.istio_all_changed_files }}
         run: |
           go test -v ./test -run TestIstio
+      - name: Golang Tests
+        if: steps.changed-argo-apps.outputs.go_test_any_changed == 'true'
+        env:
+          GO_TEST_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.go_test_all_changed_files }}
+        run: |
+          for test in ${GO_TEST_CHANGED_FILES}; do
+          echo "${test} was changed"
+            go test -v ./test -run $(basename ${test} _test.go | sed 's/.*/Test\u&/' | sed -E 's/_([a-z])/\U\1/g')
+          done
+      - name: Upload KinD logs
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: kind
+          path: 'test/kind-logs'
+          retention-days: 3
