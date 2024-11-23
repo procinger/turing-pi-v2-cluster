@@ -81,7 +81,7 @@ http://<ip-of-a-node>/jaeger
 ### Kiali Sign in
 Kiali Sign in tokens have a short lifetime. Therefore, a new token must be created each time the Kiali Dashboard is needed
 ```
-kubectl --namespace istio-system create token kiali                                                                                                                         
+$ kubectl --namespace istio-system create token kiali                                                                                                                         
 
 eyJhbGciOiJSUzI1NiIsImtVbt_-7...snip...-aWjp3925QexVkfQuPP-qQ94AtoZGS2LQwvz7KcKKEVLUtfbKZeFie3B6EQO4iQ
 ```
@@ -106,11 +106,19 @@ In the Prometheus Kube stack, the credentials have not been changed and are defa
 using the username `admin` and password `prom-operator`.
 ![title](images/grafana.png)
 
+### Longhorn CSI
+The Longhorn Web UI is not exposed at all via Ingress or Istio Gateway. If access to the dashboard is required, a port
+forward to localhost should be established via kubectl. The dashboard can then be accessed at http://localhost:8080
+```
+$ kubectl --kubeconfig ./kubeconfig -n longhorn port-forward svc/longhorn-frontend 8080:80
+```
+![longhorn](images/longhorn.png)
+
 ### Bitnami Sealed Secrets
 Sealed Secrets are used to create encrypted Kubernetes Secrets. Before such a secret can be created, the
 public certificate must be exported from the controller
 ```
-kubeseal --kubeconfig ./kubeconfig --namespace kube-system  --controller-name sealed-secrets --fetch-cert > public-key-cert.pem
+$ kubeseal --kubeconfig ./kubeconfig --namespace kube-system  --controller-name sealed-secrets --fetch-cert > public-key-cert.pem
 ```
 After the public certificate has been successfully obtained, Kubernetes Secrets can be encrypted.
 
@@ -127,7 +135,7 @@ stringData:
 ```
 #### Encrypt it
 ```
-kubeseal --kubeconfig ./kubeconfig  --scope cluster-wide --namespace kube-system  --controller-name sealed-secrets --format=yaml --cert=public-key-cert.pem  < secret.yaml > secret-sealed.yaml
+$ kubeseal --kubeconfig ./kubeconfig  --scope cluster-wide --namespace kube-system  --controller-name sealed-secrets --format=yaml --cert=public-key-cert.pem  < secret.yaml > secret-sealed.yaml
 ``` 
 #### expected output
 ```
