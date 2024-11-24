@@ -16,6 +16,7 @@ Includes tools and operators
 - [Kiali](https://github.com/kiali/helm-charts/tree/master/kiali-server)
 - [Bitnami Sealed Secrets](https://github.com/bitnami/charts/tree/main/bitnami/sealed-secrets)
 - [Kured](https://github.com/kubereboot/kured)
+- [Cert Manager](https://github.com/cert-manager/cert-manager)
 
 # Install
 ## Prerequisites
