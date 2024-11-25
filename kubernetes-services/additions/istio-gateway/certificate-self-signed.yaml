@@ -1,0 +1,20 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls-self-signed
+spec:
+  isCA: true
+  subject:
+    organizations:
+      - Turing Pi 2 Homelab
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  commonName: self-signed-ca
+  secretName: tls-self-signed
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: issuer-self-signed
+    kind: ClusterIssuer
+    group: cert-manager.io

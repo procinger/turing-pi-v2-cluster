@@ -1,26 +1,28 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: istio-gateway
+  name: cert-manager
   namespace: argo-cd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: istio-gateway
+    namespace: cert-manager
   project: kubernetes
   sources:
-    - repoURL: https://istio-release.storage.googleapis.com/charts
-      chart: gateway
-      targetRevision: 1.24.0
+    - repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      targetRevision: 1.16.2
       helm:
         values: |
-          platform: ""
-    - path: ./config/crd/standard
-      repoURL: https://github.com/kubernetes-sigs/gateway-api.git
-      targetRevision: v1.2.0
-    - path: ./kubernetes-services/additions/istio-gateway
+          prometheus:
+            enabled: true
+          installCRDs: true
+          # https://cert-manager.io/v1.9-docs/usage/gateway/
+          extraArgs:
+           - --feature-gates=ExperimentalGatewayAPISupport=true
+    - path: ./kubernetes-services/additions/cert-manager
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: main
   syncPolicy:
@@ -29,4 +31,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - RespectIgnoreDifferences=true

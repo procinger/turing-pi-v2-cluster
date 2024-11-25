@@ -47,7 +47,7 @@ jobs:
               exit 2
             fi
           
-            go test -v ./test -run $(basename ${HELM_CHARTS_CHANGED_FILES} .yaml |  sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
+            go test -v ./test -run $(basename ${chart} .yaml | sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
           done
       - name: Test Istio Helm Chart
         if: steps.changed-argo-apps.outputs.istio_any_changed == 'true'

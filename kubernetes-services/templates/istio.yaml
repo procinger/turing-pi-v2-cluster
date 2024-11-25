@@ -24,12 +24,17 @@ spec:
       helm:
         values: |
           pilot:
+            env:
+              PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
+              K8S_INGRESS_NS: "istio-gateway"
             autoscaleEnabled: false
             replicaCount: 2
           global:
             proxy:
               tracer: "zipkin"
           meshConfig:
+            ingressService: istio-gateway
+            ingressSelector: gateway
             defaultConfig:
               tracing:
                 zipkin:
