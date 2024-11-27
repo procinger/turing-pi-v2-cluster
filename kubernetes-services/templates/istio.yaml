@@ -48,7 +48,6 @@ spec:
           clustering:
             autodetect_secrets:
               enabled: false
-          server:
           kiali_feature_flags:
             validations:
               ignore: ["KIA1106"]
