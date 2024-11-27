@@ -6,6 +6,10 @@ on:
       - kubernetes-services/**
       - test/**
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-helm-chart:
     runs-on: ubuntu-latest
