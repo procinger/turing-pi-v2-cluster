@@ -29,15 +29,11 @@ spec:
           configs:
             params:
               "server.insecure": "true"
-              "server.rootpath": "/argocd"
             cm:
               "exec.enabled": "true"
               "timeout.reconciliation": "30s"
           dex:
             enabled: false
-    - path: ./kubernetes-services/additions/argo-cd
-      repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
-      targetRevision: main
   syncPolicy:
     automated:
       prune: true

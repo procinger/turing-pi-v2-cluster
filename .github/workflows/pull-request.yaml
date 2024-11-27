@@ -1,9 +1,14 @@
 name: Helm Chart Changes
 on:
+  merge_group:
   pull_request:
     paths:
       - kubernetes-services/**
       - test/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test-helm-chart:

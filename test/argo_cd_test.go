@@ -29,9 +29,9 @@ func TestArgoCd(t *testing.T) {
 
 			return ctx
 		}).
-		Assess("Pods became ready",
+		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckPodsBecameReady(argoAppCurrent)
+				err := test.DeploymentBecameReady(argoAppCurrent)
 				assert.NoError(t, err)
 
 				return ctx
@@ -56,9 +56,9 @@ func TestArgoCd(t *testing.T) {
 
 			return ctx
 		}).
-		Assess("Pods became ready",
+		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckPodsBecameReady(argoAppUpdate)
+				err := test.DeploymentBecameReady(argoAppUpdate)
 				assert.NoError(t, err)
 
 				return ctx

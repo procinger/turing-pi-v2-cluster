@@ -48,8 +48,6 @@ spec:
           clustering:
             autodetect_secrets:
               enabled: false
-          server:
-            web_root: /kiali
           kiali_feature_flags:
             validations:
               ignore: ["KIA1106"]
@@ -85,18 +83,12 @@ spec:
             cassandra: false
           allInOne:
             enabled: true
-            extraEnv:
-              - name: QUERY_BASE_PATH
-                value: /jaeger
           storage:
             type: memory
           agent:
             enabled: false
           collector:
             enabled: false
-    - path: ./kubernetes-services/additions/istio
-      repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
-      targetRevision: main
   syncPolicy:
     automated:
       prune: true
