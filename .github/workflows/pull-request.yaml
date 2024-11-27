@@ -1,5 +1,6 @@
 name: Helm Chart Changes
 on:
+  merge_group:
   pull_request:
     paths:
       - kubernetes-services/**
