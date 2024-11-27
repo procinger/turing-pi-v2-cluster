@@ -43,7 +43,6 @@ spec:
               type: Recreate
             grafana.ini:
               server:
-                root_url: /grafana/
                 serve_from_sub_path: true
             persistence:
               enabled: true
