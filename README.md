@@ -17,6 +17,7 @@ Includes tools and operators
 - [Bitnami Sealed Secrets](https://github.com/bitnami/charts/tree/main/bitnami/sealed-secrets)
 - [Kured](https://github.com/kubereboot/kured)
 - [Cert Manager](https://github.com/cert-manager/cert-manager)
+- [Argo Rollouts](https://github.com/argoproj/argo-rollouts)
 
 # Install
 ## Prerequisites
