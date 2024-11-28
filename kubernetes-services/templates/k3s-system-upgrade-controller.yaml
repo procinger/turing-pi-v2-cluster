@@ -11,7 +11,13 @@ spec:
     namespace: system-upgrade
   project: kubernetes
   sources:
-    - path: ./manifests
+    - path: ./manifests/clusterrole.yaml
+      repoURL: https://github.com/rancher/system-upgrade-controller.git
+      targetRevision: v0.14.2
+    - path: ./manifests/clusterrolebinding.yaml
+      repoURL: https://github.com/rancher/system-upgrade-controller.git
+      targetRevision: v0.14.2
+    - path: ./manifests/system-upgrade-controller.yaml
       repoURL: https://github.com/rancher/system-upgrade-controller.git
       targetRevision: v0.14.2
     - path: ./kubernetes-services/additions/k3s-upgrade-controller
