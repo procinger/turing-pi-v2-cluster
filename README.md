@@ -18,6 +18,7 @@ Includes tools and operators
 - [Kured](https://github.com/kubereboot/kured)
 - [Cert Manager](https://github.com/cert-manager/cert-manager)
 - [Argo Rollouts](https://github.com/argoproj/argo-rollouts)
+- [Kargo.io](https://github.com/akuity/kargo)
 
 # Install
 ## Prerequisites
@@ -101,6 +102,15 @@ and the password determined from the secret.
 If you prefer to use the terminal, you can log in with the argocd cli tool using the following command
 ```
 $ argocd login <ip-of-a-node>:443 --grpc-web-root-path argocd
+```
+
+### Kargo.io
+At the moment there is no possibility to create a random password in the Kargo.io Helm Chart. Therefore, `kargo` is
+created as admin password during installation.
+
+Create a port forward to the service and access the dashboard at https://localhost:8080
+```
+$ kubectl -n kargo port-forward svc/kargo-api 8080:443
 ```
 
 ### Grafana

@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
+	"strings"
 	"test/test/pkg/helper"
 	"time"
 )
@@ -34,14 +35,20 @@ func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.App
 		return nil
 	}
 
+	*argoAppCurrent, err = helper.GetArgoApplicationFromGit(applicationYaml)
+	if err != nil {
+		return err
+	}
+
 	*argoAppUpdate, err = helper.GetArgoApplication(applicationYaml)
 	if err != nil {
 		return err
 	}
 
-	*argoAppCurrent, err = helper.GetArgoApplicationFromGit(applicationYaml)
-	if err != nil {
-		return err
+	if argoAppCurrent.Spec.Source == nil || argoAppCurrent.Spec.Sources == nil {
+		*argoAppCurrent = *argoAppUpdate
+		*argoAppUpdate = applicationV1Alpha1.Application{}
+		return nil
 	}
 
 	if reflect.DeepEqual(argoAppCurrent, argoAppUpdate) {
@@ -54,12 +61,14 @@ func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.App
 func deployHelmChart(applicationSource applicationV1Alpha1.ApplicationSource,namespace string, cfg *envconf.Config) error {
 	helmMgr := helper.GetHelmManager(cfg)
 
-	err := helper.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
-	if err != nil {
-		return err
+	if ! strings.Contains(applicationSource.RepoURL, "oci://") {
+		err := helper.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = helper.InstallHelmChart(helmMgr, applicationSource, namespace)
+	err := helper.InstallHelmChart(helmMgr, applicationSource, namespace)
 	if err != nil {
 		return err
 	}
