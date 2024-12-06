@@ -31,10 +31,12 @@ func getFullChartName(helmRepoName string, helmChart string) string {
 }
 
 func UpgradeHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alpha1.ApplicationSource, namespace string) error {
-	fullChartName := applicationSource.Chart
+	fullChartName := getFullChartName(applicationSource.Chart, applicationSource.Chart)
 
-	if ! strings.Contains(applicationSource.RepoURL, "oci://") {
-		fullChartName = getFullChartName(applicationSource.Chart, applicationSource.Chart)
+	helmOciRepository := ""
+	if strings.Contains(applicationSource.RepoURL, "oci://") {
+		fullChartName = ""
+		helmOciRepository = applicationSource.RepoURL
 	}
 
 	if applicationSource.Helm != nil {
@@ -50,6 +52,7 @@ func UpgradeHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alph
 			helm.WithVersion(applicationSource.TargetRevision),
 			helm.WithArgs("--install"),
 			helm.WithArgs("-f", "/tmp/helm-values.txt"),
+			helm.WithArgs(helmOciRepository),
 		)
 		if err != nil {
 			return err
@@ -61,6 +64,7 @@ func UpgradeHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alph
 			helm.WithChart(fullChartName),
 			helm.WithVersion(applicationSource.TargetRevision),
 			helm.WithArgs("--install"),
+			helm.WithArgs(helmOciRepository),
 		)
 		if err != nil {
 			return err
