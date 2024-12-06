@@ -45,7 +45,7 @@ func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.App
 		return err
 	}
 
-	if argoAppCurrent.Spec.Source == nil || argoAppCurrent.Spec.Sources == nil {
+	if argoAppCurrent.Spec.Source == nil && argoAppCurrent.Spec.Sources == nil {
 		*argoAppCurrent = *argoAppUpdate
 		*argoAppUpdate = applicationV1Alpha1.Application{}
 		return nil
