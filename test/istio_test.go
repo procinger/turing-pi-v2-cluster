@@ -112,10 +112,10 @@ func TestIstio(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err = test.UpgradeHelmChart(istioAppUpdate, cfg)
+			err = test.DeployHelmCharts(istioAppUpdate, cfg)
 			require.NoError(t, err)
 
-			err = test.UpgradeHelmChart(istioGatewayAppUpdate, cfg)
+			err = test.DeployHelmCharts(istioGatewayAppUpdate, cfg)
 			require.NoError(t, err)
 
 			return ctx

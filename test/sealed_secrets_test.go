@@ -42,7 +42,7 @@ func TestSealedSecrets(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err = test.UpgradeHelmChart(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(argoAppCurrent, cfg)
 			require.NoError(t, err)
 
 			return ctx

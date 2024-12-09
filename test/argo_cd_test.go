@@ -51,7 +51,7 @@ func TestArgoCd(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err := test.UpgradeHelmChart(argoAppUpdate, cfg)
+			err := test.DeployHelmCharts(argoAppUpdate, cfg)
 			assert.NoError(t, err)
 
 			return ctx

@@ -76,7 +76,7 @@ func TestKargo(t *testing.T) {
 				kargoAppUpdate.Spec.Sources[index].RepoURL = "oci://" + kargoAppUpdate.Spec.Sources[index].RepoURL + "/" + kargoAppUpdate.Spec.Sources[index].Chart
 			}
 
-			err := test.UpgradeHelmChart(kargoAppUpdate, cfg)
+			err := test.DeployHelmCharts(kargoAppUpdate, cfg)
 			assert.NoError(t, err)
 
 			return ctx
