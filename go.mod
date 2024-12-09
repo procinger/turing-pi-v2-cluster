@@ -160,7 +160,7 @@ replace (
 	github.com/whilp/git-urls => github.com/chainguard-dev/git-urls v1.0.2
 
 	// Avoid CVE-2022-3064
-	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v2 v3.0.1
 
 	// Avoid CVE-2022-28948
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
