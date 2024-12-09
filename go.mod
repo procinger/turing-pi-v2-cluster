@@ -154,7 +154,7 @@ replace (
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 => github.com/OvyFlash/telegram-bot-api/v5 v5.0.0-20241013102643-36756d99d4ae
 
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
-	github.com/grpc-ecosystem/grpc-gateway/v2 => github.com/grpc-ecosystem/grpc-gateway v2.24.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 => github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0
 
 	// Avoid  CVE-2023-46402
 	github.com/whilp/git-urls => github.com/chainguard-dev/git-urls v1.0.2
