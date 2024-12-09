@@ -68,7 +68,7 @@ func deployHelmChart(applicationSource applicationV1Alpha1.ApplicationSource,nam
 		}
 	}
 
-	err := helper.InstallHelmChart(helmMgr, applicationSource, namespace)
+	err := helper.DeployHelmChart(helmMgr, applicationSource, namespace)
 	if err != nil {
 		return err
 	}
@@ -98,24 +98,6 @@ func DeployHelmCharts(argoApplication applicationV1Alpha1.Application,  cfg *env
 		}
 
 		err := deployHelmChart(source, argoApplication.Spec.Destination.Namespace, cfg)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func UpgradeHelmChart(argoApplication applicationV1Alpha1.Application, cfg *envconf.Config) error {
-	helmMgr := helper.GetHelmManager(cfg)
-
-	var source applicationV1Alpha1.ApplicationSource
-	for _, source = range argoApplication.Spec.Sources {
-		if source.Chart == "" {
-			continue
-		}
-
-		err := helper.UpgradeHelmChart(helmMgr, source, argoApplication.Spec.Destination.Namespace)
 		if err != nil {
 			return err
 		}

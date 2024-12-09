@@ -9,6 +9,15 @@ import (
 	"strings"
 )
 
+type HelmOptions struct {
+	Name    string  `default:""`
+	Namespace string `default:""`
+	Chart string `default:""`
+	Version string `default:""`
+	Values string `default:""`
+	OciRepository string `default:""`
+}
+
 func GetHelmManager(cfg *envconf.Config) *helm.Manager {
 	return helm.New(cfg.KubeconfigFile())
 }
@@ -26,52 +35,40 @@ func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string, helmChartName 
 	return nil
 }
 
-func getFullChartName(helmRepoName string, helmChart string) string {
-	return fmt.Sprintf("%s/%s", helmRepoName, helmChart)
+func helmifyApp(app applicationV1Alpha1.ApplicationSource, namespace string) (HelmOptions, error) {
+	fullChartName := getFullChartName(app.Chart, app.Chart)
+	helmOciRepository := ""
+
+	if strings.Contains(app.RepoURL, "oci://") {
+		fullChartName = ""
+		helmOciRepository = app.RepoURL
+	}
+
+	helmValues := make(map[int]string, 2)
+	if app.Helm != nil {
+		err := helmValuesToFile(app)
+		if err != nil {
+			return HelmOptions{}, err
+		}
+
+		helmValues[0] = "-f"
+		helmValues[1] = "/tmp/helm-values.txt"
+	}
+
+	helmOptions := HelmOptions{
+		Name: app.Chart,
+		Chart: fullChartName,
+		Namespace: namespace,
+		Version: app.TargetRevision,
+		Values: helmValues[0] + " " + helmValues[1],
+		OciRepository: helmOciRepository,
+	}
+
+	return helmOptions, nil
 }
 
-func UpgradeHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alpha1.ApplicationSource, namespace string) error {
-	fullChartName := getFullChartName(applicationSource.Chart, applicationSource.Chart)
-
-	helmOciRepository := ""
-	if strings.Contains(applicationSource.RepoURL, "oci://") {
-		fullChartName = ""
-		helmOciRepository = applicationSource.RepoURL
-	}
-
-	if applicationSource.Helm != nil {
-		err := helmValuesToFile(applicationSource)
-		if err != nil {
-			return err
-		}
-
-		err = helmMgr.RunUpgrade(
-			helm.WithName(applicationSource.Chart),
-			helm.WithNamespace(namespace),
-			helm.WithChart(fullChartName),
-			helm.WithVersion(applicationSource.TargetRevision),
-			helm.WithArgs("--install"),
-			helm.WithArgs("-f", "/tmp/helm-values.txt"),
-			helm.WithArgs(helmOciRepository),
-		)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := helmMgr.RunUpgrade(
-			helm.WithName(applicationSource.Chart),
-			helm.WithNamespace(namespace),
-			helm.WithChart(fullChartName),
-			helm.WithVersion(applicationSource.TargetRevision),
-			helm.WithArgs("--install"),
-			helm.WithArgs(helmOciRepository),
-		)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+func getFullChartName(helmRepoName string, helmChart string) string {
+	return fmt.Sprintf("%s/%s", helmRepoName, helmChart)
 }
 
 func helmValuesToFile(applicationSource applicationV1Alpha1.ApplicationSource) error {
@@ -93,44 +90,24 @@ func helmValuesToFile(applicationSource applicationV1Alpha1.ApplicationSource) e
 	return nil
 }
 
-func InstallHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alpha1.ApplicationSource, namespace string) error {
-	fullChartName := getFullChartName(applicationSource.Chart, applicationSource.Chart)
-
-	helmOciRepository := ""
-	if strings.Contains(applicationSource.RepoURL, "oci://") {
-		fullChartName = ""
-		helmOciRepository = applicationSource.RepoURL
+func DeployHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alpha1.ApplicationSource, namespace string) error {
+	helmOptions, err := helmifyApp(applicationSource, namespace)
+	if err != nil {
+		return err
 	}
 
-	if applicationSource.Helm != nil {
-		err := helmValuesToFile(applicationSource)
-		if err != nil {
-			return err
-		}
-		err = helmMgr.RunInstall(
-			helm.WithName(applicationSource.Chart),
-			helm.WithNamespace(namespace),
-			helm.WithChart(fullChartName),
-			helm.WithVersion(applicationSource.TargetRevision),
-			helm.WithArgs("--create-namespace"),
-			helm.WithArgs("-f", "/tmp/helm-values.txt"),
-			helm.WithArgs(helmOciRepository),
-		)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := helmMgr.RunInstall(
-			helm.WithName(applicationSource.Chart),
-			helm.WithNamespace(namespace),
-			helm.WithChart(fullChartName),
-			helm.WithVersion(applicationSource.TargetRevision),
-			helm.WithArgs("--create-namespace"),
-			helm.WithArgs(helmOciRepository),
-		)
-		if err != nil {
-			return err
-		}
+	err = helmMgr.RunUpgrade(
+		helm.WithArgs("--install"),
+		helm.WithName(helmOptions.Name),
+		helm.WithNamespace(helmOptions.Namespace),
+		helm.WithChart(helmOptions.Chart),
+		helm.WithVersion(helmOptions.Version),
+		helm.WithArgs("--create-namespace"),
+		helm.WithArgs(helmOptions.Values),
+		helm.WithArgs(helmOptions.OciRepository),
+	)
+	if err != nil {
+		return err
 	}
 
 	return nil

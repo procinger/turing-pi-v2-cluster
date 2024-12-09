@@ -84,7 +84,7 @@ func TestPrometheus(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err = test.UpgradeHelmChart(argoAppUpdate, cfg)
+			err = test.DeployHelmCharts(argoAppUpdate, cfg)
 			require.NoError(t, err)
 
 			return ctx
