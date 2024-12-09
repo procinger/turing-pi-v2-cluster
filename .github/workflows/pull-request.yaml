@@ -5,6 +5,8 @@ on:
     paths:
       - kubernetes-services/**
       - test/**
+      - go.mod
+      - renovate.json
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,6 +37,8 @@ jobs:
               - test/**_test.go
             go_helper:
               - test/**/**.go
+            go_dependencies:
+              - go.mod
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
@@ -72,7 +76,7 @@ jobs:
             go test -v ./test -run $(basename ${test} _test.go | sed 's/.*/Test\u&/' | sed -E 's/_([a-z])/\U\1/g')
           done
       - name: Golang Test Helper
-        if: steps.changed-argo-apps.outputs.go_helper_any_changed == 'true'
+        if: ${{ steps.changed-argo-apps.outputs.go_helper_any_changed == 'true' || steps.changed-argo-apps.outputs.go_dependencies_any_changed == 'true' }}
         run: |
           go test -v ./test
       - name: Upload KinD logs
