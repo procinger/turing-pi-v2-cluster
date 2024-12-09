@@ -5,8 +5,8 @@
   ],
   "assignees": ["procinger"],
   "prHourlyLimit": 5,
-  "prConcurrentLimit": 5,
-  "enabledManagers": ["kubernetes", "argocd"],
+  "prConcurrentLimit": 10,
+  "enabledManagers": ["kubernetes", "argocd", "golang"],
   "kubernetes": {
     "fileMatch": ["^kubernetes-services/.*\\.yaml$"]
   },
