@@ -4,7 +4,7 @@ go 1.22.5
 
 require (
 	github.com/argoproj/argo-cd/v2 v2.11.4
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.10.0
 	k8s.io/api v0.26.11
 	k8s.io/apimachinery v0.26.11
 	k8s.io/client-go v0.26.11
