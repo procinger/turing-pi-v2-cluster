@@ -109,7 +109,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
-	go.starlark.net v0.0.0-20220328144851-d1966c6b9fcd // indirect
+	go.starlark.net v0.0.0-20241125201518-c05ff208a98f // indirect
 	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
