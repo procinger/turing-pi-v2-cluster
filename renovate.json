@@ -21,6 +21,11 @@
       "automerge": true
     },
     {
+      "matchManagers": ["gomod"],
+      "enabled": true,
+      "automerge": true
+    },
+    {
       "description": "respect weird docker versioning",
       "versioning": "docker",
       "matchDatasources": ["docker"]
@@ -32,6 +37,16 @@
         "istiod",
         "gateway",
         "base"
+      ]
+    },
+    {
+      "description": "grouping of k8s packages",
+      "groupName": "go k8s apis",
+      "matchDatasources": "go",
+      "matchPackageNames": [
+        "k8s.io/**",
+        "sigs.k8s.io/**",
+        "github.com/argoproj/**"
       ]
     }
   ]
