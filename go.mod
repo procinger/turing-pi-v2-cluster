@@ -66,7 +66,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
-	github.com/imdario/mergo v0.3.16 // indirect
+	github.com/imdario/mergo v1.0.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jonboulle/clockwork v0.4.0 // indirect
@@ -149,6 +149,7 @@ require (
 
 replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
+	github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
 	// Avoid CVE-2022-3064
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
