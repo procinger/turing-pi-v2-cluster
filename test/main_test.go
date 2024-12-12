@@ -7,6 +7,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/env"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
+	"sigs.k8s.io/e2e-framework/support/kind"
 	"testing"
 )
 
@@ -27,12 +28,12 @@ func TestMain(m *testing.M) {
 	kindClusterName = envconf.RandomName("ci-e2e-test", 16)
 
 	ciTestEnv.Setup(
-		envfuncs.CreateKindCluster(kindClusterName),
+		envfuncs.CreateCluster(kind.NewProvider(), kindClusterName),
 	)
 
 	ciTestEnv.Finish(
-		envfuncs.ExportKindClusterLogs(kindClusterName, "./kind-logs"),
-		envfuncs.DestroyKindCluster(kindClusterName),
+		envfuncs.ExportClusterLogs(kindClusterName, "./kind-logs"),
+		envfuncs.DestroyCluster(kindClusterName),
 	)
 
 	os.Exit(ciTestEnv.Run(m))
