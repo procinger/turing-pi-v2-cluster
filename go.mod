@@ -3,11 +3,11 @@ module test
 go 1.23.4
 
 require (
-	github.com/argoproj/argo-cd/v2 v2.13.1
+	github.com/argoproj/argo-cd/v2 v2.13.2
 	github.com/stretchr/testify v1.10.0
-	k8s.io/api v0.31.3
-	k8s.io/apimachinery v0.31.3
-	k8s.io/client-go v0.31.3
+	k8s.io/api v0.32.0
+	k8s.io/apimachinery v0.32.0
+	k8s.io/client-go v0.32.0
 	sigs.k8s.io/e2e-framework v0.5.0
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -20,8 +20,8 @@ require (
 	github.com/Masterminds/semver/v3 v3.3.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
-	github.com/argoproj/gitops-engine v0.7.1-0.20240905010810-bd7681ae3f8b // indirect
-	github.com/argoproj/pkg v0.13.7-0.20230626144333-d56162821bd1 // indirect
+	github.com/argoproj/gitops-engine v0.7.3 // indirect
+	github.com/argoproj/pkg 05fa64494596 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.7.1 // indirect
@@ -128,23 +128,23 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.31.2 // indirect
-	k8s.io/apiserver v0.31.0 // indirect
-	k8s.io/cli-runtime v0.31.0 // indirect
-	k8s.io/component-base v0.31.1 // indirect
-	k8s.io/component-helpers v0.31.0 // indirect
+	k8s.io/apiextensions-apiserver v0.32.0 // indirect
+	k8s.io/apiserver v0.32.0 // indirect
+	k8s.io/cli-runtime v0.32.0 // indirect
+	k8s.io/component-base v0.32.0 // indirect
+	k8s.io/component-helpers v0.32.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-aggregator v0.31.2 // indirect
-	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	k8s.io/kubectl v0.31.2 // indirect
-	k8s.io/kubernetes v1.31.0 // indirect
-	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
+	k8s.io/kube-aggregator v0.32.0 // indirect
+	k8s.io/kube-openapi 2c72e554b1e7 // indirect
+	k8s.io/kubectl v0.32.0 // indirect
+	k8s.io/kubernetes v1.32.0 // indirect
+	k8s.io/utils 24370beab758 // indirect
 	oras.land/oras-go/v2 v2.5.0 // indirect
-	sigs.k8s.io/controller-runtime v0.19.0 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/kustomize/api v0.17.2 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.17.1 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
+	sigs.k8s.io/controller-runtime v0.19.3 // indirect
+	sigs.k8s.io/json cfa47c3a1cc8 // indirect
+	sigs.k8s.io/kustomize/api v0.18.0 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.18.1 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.5.0 // indirect
 )
 
 replace (
@@ -157,14 +157,14 @@ replace (
 	// Avoid CVE-2022-28948
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 
-	k8s.io/api => k8s.io/api v0.31.0
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.31.0
-	k8s.io/apimachinery => k8s.io/apimachinery v0.31.2
-	k8s.io/apiserver => k8s.io/apiserver v0.31.0
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.31.0
-	k8s.io/client-go => k8s.io/client-go v0.31.0
-	k8s.io/component-base => k8s.io/component-base v0.31.0
-	k8s.io/component-helpers => k8s.io/component-helpers v0.31.0
-	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.31.0
-	k8s.io/kubectl => k8s.io/kubectl v0.31.0
+	k8s.io/api => k8s.io/api v0.32.0
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.32.0
+	k8s.io/apimachinery => k8s.io/apimachinery v0.32.0
+	k8s.io/apiserver => k8s.io/apiserver v0.32.0
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.32.0
+	k8s.io/client-go => k8s.io/client-go v0.32.0
+	k8s.io/component-base => k8s.io/component-base v0.32.0
+	k8s.io/component-helpers => k8s.io/component-helpers v0.32.0
+	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.32.0
+	k8s.io/kubectl => k8s.io/kubectl v0.32.0
 )
