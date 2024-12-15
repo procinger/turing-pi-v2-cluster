@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"fmt"
-	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,10 +16,11 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"strings"
 	"test/test/pkg/helper"
+	"test/test/pkg/types/argocd"
 	"time"
 )
 
-func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.Application, argoAppUpdate *applicationV1Alpha1.Application) error {
+func PrepareTest(applicationYaml string, argoAppCurrent *argocd.Application, argoAppUpdate *argocd.Application) error {
 	currGitBranch, err := helper.GetCurrentGitBranch()
 	if err != nil {
 		return err
@@ -47,21 +47,21 @@ func PrepareTest(applicationYaml string, argoAppCurrent *applicationV1Alpha1.App
 
 	if argoAppCurrent.Spec.Source == nil && argoAppCurrent.Spec.Sources == nil {
 		*argoAppCurrent = *argoAppUpdate
-		*argoAppUpdate = applicationV1Alpha1.Application{}
+		*argoAppUpdate = argocd.Application{}
 		return nil
 	}
 
 	if reflect.DeepEqual(argoAppCurrent, argoAppUpdate) {
-		*argoAppUpdate = applicationV1Alpha1.Application{}
+		*argoAppUpdate = argocd.Application{}
 	}
 
 	return nil
 }
 
-func deployHelmChart(applicationSource applicationV1Alpha1.ApplicationSource,namespace string, cfg *envconf.Config) error {
+func deployHelmChart(applicationSource argocd.ApplicationSource, namespace string, cfg *envconf.Config) error {
 	helmMgr := helper.GetHelmManager(cfg)
 
-	if ! strings.Contains(applicationSource.RepoURL, "oci://") {
+	if !strings.Contains(applicationSource.RepoURL, "oci://") {
 		err := helper.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
 		if err != nil {
 			return err
@@ -73,11 +73,10 @@ func deployHelmChart(applicationSource applicationV1Alpha1.ApplicationSource,nam
 		return err
 	}
 
-
 	return nil
 }
 
-func DeployHelmCharts(argoApplication applicationV1Alpha1.Application,  cfg *envconf.Config) error {
+func DeployHelmCharts(argoApplication argocd.Application, cfg *envconf.Config) error {
 	if argoApplication.Spec.Source != nil {
 		if argoApplication.Spec.Source.Chart == "" {
 			return nil
@@ -91,7 +90,7 @@ func DeployHelmCharts(argoApplication applicationV1Alpha1.Application,  cfg *env
 		return nil
 	}
 
-	var source applicationV1Alpha1.ApplicationSource
+	var source argocd.ApplicationSource
 	for _, source = range argoApplication.Spec.Sources {
 		if source.Chart == "" {
 			continue
@@ -117,10 +116,10 @@ func getClient() (*kubernetes.Clientset, error) {
 	return clientSet, nil
 }
 
-func CheckPodsBecameReady(argoApplication applicationV1Alpha1.Application) error {
+func CheckPodsBecameReady(argoApplication argocd.Application) error {
 	cfg := envconf.Config{}
 	podList := corev1.PodList{}
-	var source applicationV1Alpha1.ApplicationSource
+	var source argocd.ApplicationSource
 
 	for _, source = range argoApplication.Spec.Sources {
 		if source.Chart == "" {
@@ -160,7 +159,7 @@ func CheckPodsBecameReady(argoApplication applicationV1Alpha1.Application) error
 	return nil
 }
 
-func CheckJobsCompleted(argoApplication applicationV1Alpha1.Application, ctx context.Context) error {
+func CheckJobsCompleted(argoApplication argocd.Application, ctx context.Context) error {
 	clientSet, err := getClient()
 	if err != nil {
 		return err
@@ -186,7 +185,7 @@ func CheckJobsCompleted(argoApplication applicationV1Alpha1.Application, ctx con
 	return nil
 }
 
-func DeploymentBecameReady(argoApplication applicationV1Alpha1.Application) error {
+func DeploymentBecameReady(argoApplication argocd.Application) error {
 	clientSet, err := getClient()
 	if err != nil {
 		return err

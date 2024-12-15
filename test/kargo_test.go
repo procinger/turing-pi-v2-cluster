@@ -2,22 +2,20 @@ package test
 
 import (
 	"context"
-	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 	"test/test/pkg/test"
+	"test/test/pkg/types/argocd"
 	"testing"
 )
 
 var (
-
-	kargoAppCurrent  applicationV1Alpha1.Application
-	kargoAppUpdate   applicationV1Alpha1.Application
-	certManagerAppCurrent applicationV1Alpha1.Application
-	certManagerAppUpdate applicationV1Alpha1.Application
-
+	kargoAppCurrent       argocd.Application
+	kargoAppUpdate        argocd.Application
+	certManagerAppCurrent argocd.Application
+	certManagerAppUpdate  argocd.Application
 )
 
 func TestKargo(t *testing.T) {

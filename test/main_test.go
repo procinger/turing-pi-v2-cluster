@@ -2,20 +2,20 @@ package test
 
 import (
 	"fmt"
-	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"os"
 	"sigs.k8s.io/e2e-framework/pkg/env"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
 	"sigs.k8s.io/e2e-framework/support/kind"
+	"test/test/pkg/types/argocd"
 	"testing"
 )
 
 var (
 	ciTestEnv       env.Environment
 	kindClusterName string
-	argoAppCurrent  applicationV1Alpha1.Application
-	argoAppUpdate   applicationV1Alpha1.Application
+	argoAppCurrent  argocd.Application
+	argoAppUpdate   argocd.Application
 )
 
 func TestMain(m *testing.M) {
