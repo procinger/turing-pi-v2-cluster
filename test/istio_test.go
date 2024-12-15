@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -11,14 +10,15 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 	"test/test/pkg/test"
+	"test/test/pkg/types/argocd"
 	"testing"
 )
 
 var (
-	istioAppCurrent  applicationV1Alpha1.Application
-	istioAppUpdate   applicationV1Alpha1.Application
-	istioGatewayAppCurrent  applicationV1Alpha1.Application
-	istioGatewayAppUpdate   applicationV1Alpha1.Application
+	istioAppCurrent        argocd.Application
+	istioAppUpdate         argocd.Application
+	istioGatewayAppCurrent argocd.Application
+	istioGatewayAppUpdate  argocd.Application
 )
 
 func TestIstio(t *testing.T) {

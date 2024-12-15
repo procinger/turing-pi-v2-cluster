@@ -2,19 +2,19 @@ package helper
 
 import (
 	"fmt"
-	applicationV1Alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"os"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 	"strings"
+	"test/test/pkg/types/argocd"
 )
 
 type HelmOptions struct {
-	Name    string  `default:""`
-	Namespace string `default:""`
-	Chart string `default:""`
-	Version string `default:""`
-	Values string `default:""`
+	Name          string `default:""`
+	Namespace     string `default:""`
+	Chart         string `default:""`
+	Version       string `default:""`
+	Values        string `default:""`
 	OciRepository string `default:""`
 }
 
@@ -35,7 +35,7 @@ func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string, helmChartName 
 	return nil
 }
 
-func helmifyApp(app applicationV1Alpha1.ApplicationSource, namespace string) (HelmOptions, error) {
+func helmifyApp(app argocd.ApplicationSource, namespace string) (HelmOptions, error) {
 	fullChartName := getFullChartName(app.Chart, app.Chart)
 	helmOciRepository := ""
 
@@ -56,11 +56,11 @@ func helmifyApp(app applicationV1Alpha1.ApplicationSource, namespace string) (He
 	}
 
 	helmOptions := HelmOptions{
-		Name: app.Chart,
-		Chart: fullChartName,
-		Namespace: namespace,
-		Version: app.TargetRevision,
-		Values: helmValues[0] + " " + helmValues[1],
+		Name:          app.Chart,
+		Chart:         fullChartName,
+		Namespace:     namespace,
+		Version:       app.TargetRevision,
+		Values:        helmValues[0] + " " + helmValues[1],
 		OciRepository: helmOciRepository,
 	}
 
@@ -71,7 +71,7 @@ func getFullChartName(helmRepoName string, helmChart string) string {
 	return fmt.Sprintf("%s/%s", helmRepoName, helmChart)
 }
 
-func helmValuesToFile(applicationSource applicationV1Alpha1.ApplicationSource) error {
+func helmValuesToFile(applicationSource argocd.ApplicationSource) error {
 	helmValues, err := os.Create("/tmp/helm-values.txt")
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func helmValuesToFile(applicationSource applicationV1Alpha1.ApplicationSource) e
 	return nil
 }
 
-func DeployHelmChart(helmMgr *helm.Manager, applicationSource applicationV1Alpha1.ApplicationSource, namespace string) error {
+func DeployHelmChart(helmMgr *helm.Manager, applicationSource argocd.ApplicationSource, namespace string) error {
 	helmOptions, err := helmifyApp(applicationSource, namespace)
 	if err != nil {
 		return err

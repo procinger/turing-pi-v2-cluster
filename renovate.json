@@ -18,17 +18,23 @@
     {
       "matchManagers": ["argocd"],
       "enabled": true,
-      "automerge": true
+      "automerge": true,
+      "labels": [
+        "argocd",
+        "helm chart"
+      ]
     },
     {
       "matchManagers": ["gomod"],
       "enabled": true,
-      "automerge": true
+      "automerge": true,
+      "labels": ["golang"]
     },
     {
       "description": "respect weird docker versioning",
       "versioning": "docker",
-      "matchDatasources": ["docker"]
+      "matchDatasources": ["docker"],
+      "labels": ["container image"]
     },
     {
       "description": "grouping of istio helm charts",
@@ -37,6 +43,10 @@
         "istiod",
         "gateway",
         "base"
+      ],
+      "labels": [
+        "argocd",
+        "helm chart"
       ]
     },
     {
@@ -45,8 +55,12 @@
       "matchDatasources": "go",
       "matchPackageNames": [
         "k8s.io/**",
-        "sigs.k8s.io/**",
-        "github.com/argoproj/**"
+        "sigs.k8s.io/**"
+      ],
+      "labels": [
+        "golang",
+        "k8s api",
+        "e2e framework"
       ]
     }
   ]
