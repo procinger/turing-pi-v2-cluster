@@ -7,6 +7,7 @@ on:
       - test/**
       - go.mod
       - renovate.json
+      - .github/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,8 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       - uses: yokawasa/action-setup-kube-tools@v0.11.1
         with:
           kubectl: '1.29.0'
@@ -85,3 +84,47 @@ jobs:
           name: kind
           path: 'test/kind-logs'
           retention-days: 3
+
+  create-resource-diff:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: pull-request
+
+      - uses: tj-actions/changed-files@v45.0.4
+        id: changed-argo-apps
+        with:
+          files_yaml: |
+            apps:
+              - kubernetes-services/**
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Generate Diff
+        if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
+        run: |
+          docker run \
+            --network=host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $(pwd)/main:/base-branch \
+            -v $(pwd)/pull-request:/target-branch \
+            -v $(pwd)/output:/output \
+            -e TARGET_BRANCH=${{ github.head_ref }} \
+            -e REPO=${{ github.repository }} \
+            dagandersen/argocd-diff-preview:v0.0.25
+
+      - name: Post diff as comment
+        if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
+        run: |
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md --edit-last || \
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
