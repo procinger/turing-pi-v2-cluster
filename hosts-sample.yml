@@ -16,6 +16,18 @@ all:
     # Ubuntu can be installed directly on the NVME storage and booted from there.
     #storage:
     #  block_device: /dev/nvme0n1
+
+    # if you want to expose your homelab cluster on the internet
+    # and have a Cloudflare account, you can set up a tunnel here
+    #cloudflare:
+    #  # create a cloudflare tunnel
+    #  # cloudflared tunnel login
+    #  # cloudflared tunnel create <name>
+    #  # cloudflared tunnel token <name>
+    #  tunnel_name: <tunnel_name>
+    #  tunnel_token: <tunnel_token>
+    #  hostname: <hostname of tunnel>
+
     k3s:
       # create a random token with openssl
       # openssl rand -hex 64

@@ -1,11 +1,12 @@
-# Turing Pi v2 K3S Cluster with RK 1 Compute Modules (Project is WIP and not finished!)
+# Turing Pi v2 K3S Cluster with RK 1 Compute Modules
 This project uses an Ansible playbook to install a K3S 4 node cluster on the RK1 computer modules from the [Turing Pi Project](https://turingpi.com/).
-This involves installing 3 servers and 1 agent node.
+This involves installing 3 control-planes and 1 agent node.
 
 After the successful K3S installation, Argo CD is installed and linked to this repository using the [App of Apps pattern (cluster bootstrapping)](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/).
 This simplifies the handling of the various Helm charts, their configurations and updates.
 
 Includes tools and operators
+- [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
 - [Argo CD](https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd)
 - [Prometheus Kube Stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 - [Longhorn CSI](https://github.com/longhorn/longhorn)
@@ -26,12 +27,17 @@ Includes tools and operators
 * Passwordless authentication via SSH key must be set up on all nodes.
 
 ## Setup K3S on RK1
-Copy the hosts-sample.yml and adjust the settings like ip addresses of the RK1 Modules. Afterward run the Ansible playbook
+Copy the hosts-sample.yml and adjust the settings like ip addresses and NVME of the RK1 Modules. If you want to expose 
+your cluster on the Internet, you can set up a cloudflare tunnel add the data to `hosts.yaml`. 
+Afterward run the Ansible playbook.
 ```bash
-cp hosts-sample.yml hosts.yml
-# adjust the ip addresses and nvme settings
+$ cloudflared login                     # (optional)
+$ cloudflared tunnel create my-tunnel   # (optional)
+$ cloudflared tunnel token my-tunnel    # (optional)
+$ cp hosts-sample.yml hosts.yml
+# adjust the ip addresses, nvme and cloudflare settings
 # and run the playbook
-ansible-playbook -i hosts.yml turingpi.yml
+$ ansible-playbook -i hosts.yml turingpi.yml
 ```
 After successful provisioning, all nodes should be available.
 ```
@@ -43,6 +49,53 @@ turing-02   Ready    control-plane,etcd,master   23h   v1.28.6+k3s2   192.168.10
 turing-03   Ready    control-plane,etcd,master   23h   v1.28.6+k3s2   192.168.100.233   <none>        Ubuntu 22.04.4 LTS   5.10.160-rockchip   containerd://1.7.11-k3s2
 turing-04   Ready    <none>                      23h   v1.28.6+k3s2   192.168.100.234   <none>        Ubuntu 22.04.4 LTS   5.10.160-rockchip   containerd://1.7.11-k3s2
 ```
+
+### Cloudflare (optional)
+If the Cloudflare tunnel has been set up, two ingress routes have been created to your hostname.These ingress routes
+resolve to the Istio gateway in the cluster.
+```
+- hostname: example.net
+  service: https://istio-gateway.istio-gateway.svc.cluster.local:443
+  originRequest:
+    noTLSVerify: true
+- hostname: *.example.net
+  service: https://istio-gateway.istio-gateway.svc.cluster.local:443
+  originRequest:
+    noTLSVerify: true
+```
+In order for these routes to be resolved, two additional records must be added to your Cloudflare DNS
+in your Cloudflare Account.
+
+| TYPE  | Name | Content                         |
+|-------|------|---------------------------------|
+| CNAME | @    | uuid-of-tunnel.cfargotunnel.com |
+| CNAME | *    | uuid-of-tunnel.cfargotunnel.com |
+
+If a service is to be exposed on the Internet, a [VirtualService](https://istio.io/latest/docs/reference/config/networking/virtual-service/) 
+can be created and the host name added to the host section. Example ArgoCD
+```
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: argo-cd-virtualservice
+  namespace: argo-cd
+spec:
+  hosts:
+    - "argocd.example.net"
+  gateways:
+    - istio-gateway/non-tls-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: argo-cd-argocd-server
+            port:
+              number: 80
+```
+
+
 ## Accessing the Cluster
 
 ### kubectl

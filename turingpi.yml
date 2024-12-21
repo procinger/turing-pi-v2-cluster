@@ -28,3 +28,10 @@
   become: yes
   roles:
     - role: argo-cd
+
+- name: Install Cloudflare Tunnel
+  hosts: server
+  gather_facts: true
+  become: yes
+  roles:
+    - role: cloudflare
