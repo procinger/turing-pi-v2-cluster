@@ -1,0 +1,48 @@
+---
+- name: Setup Cloudflare Tunnel
+  when: inventory_hostname == groups['server'][0] and cloudflare is defined
+  block:
+  - name: Create Cloudflare Namespace
+    ansible.builtin.shell: |
+      kubectl --kubeconfig ~{{ ansible_user }}/.kube/config delete namespace cloudflare --ignore-not-found
+      kubectl --kubeconfig ~{{ ansible_user }}/.kube/config create namespace cloudflare
+
+  - name: Create Cloudflare Secret
+    ansible.builtin.shell: |
+      kubectl --kubeconfig ~{{ ansible_user }}/.kube/config --namespace cloudflare \
+        create secret generic cloudflare \
+        --from-literal=tunnel-token={{ cloudflare.tunnel_token }}
+
+  - name: Create Cloudflare Configmap
+    ansible.builtin.shell: |
+      cat <<EOF | kubectl --kubeconfig ~{{ ansible_user }}/.kube/config --namespace cloudflare apply -f -
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: cloudflare
+      data:
+        config.yaml: |
+          tunnel: {{ cloudflare.tunnel_name }}
+          warp-routing:
+            enabled: false
+          metrics: 0.0.0.0:2000
+          # Autoupdates applied in a k8s pod will be lost when the pod is removed or restarted, so
+          # autoupdate doesn't make sense in Kubernetes. However, outside of Kubernetes, we strongly
+          # recommend using autoupdate.
+          no-autoupdate: true
+          ingress:
+            - hostname: {{ cloudflare.hostname }}
+              service: https://istio-gateway.istio-gateway.svc.cluster.local:443
+              originRequest:
+                noTLSVerify: true
+            - hostname: "*.{{ cloudflare.hostname }}"
+              service: https://istio-gateway.istio-gateway.svc.cluster.local:443
+              originRequest:
+                noTLSVerify: true
+            # This rule matches any traffic which didn't match a previous rule, and responds with HTTP 404.
+            - service: http_status:404
+      EOF
+
+  - name: Deploy cloudflared
+    ansible.builtin.shell: |
+      kubectl --kubeconfig ~{{ ansible_user }}/.kube/config --namespace cloudflare apply -f kubernetes-services/additions/cloudflare-tunnel/deployment.yaml
