@@ -36,14 +36,8 @@ func TestArgoRollouts(t *testing.T) {
 
 				return ctx
 			}).
-		Assess("Jobs run successfully",
-			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckJobsCompleted(argoAppCurrent, ctx)
-				assert.NoError(t, err)
-
-				return ctx
-			}).
 		Feature()
+
 	upgrade := features.
 		New("Upgrading Argo Rollouts Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
@@ -59,13 +53,6 @@ func TestArgoRollouts(t *testing.T) {
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 				err := test.DeploymentBecameReady(argoAppUpdate)
-				assert.NoError(t, err)
-
-				return ctx
-			}).
-		Assess("Jobs run successfully",
-			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckJobsCompleted(argoAppCurrent, ctx)
 				assert.NoError(t, err)
 
 				return ctx

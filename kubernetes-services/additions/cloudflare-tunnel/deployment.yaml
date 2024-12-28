@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-tunnel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflare-tunnel
+  template:
+    metadata:
+      labels:
+        app: cloudflare-tunnel
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      initContainers:
+        - name: config-exits
+          image: alpine:3.21.0@sha256:21dc6063fd678b478f57c0e13f47560d0ea4eeba26dfc947b2a4f81f686b9f45
+          command:
+            - /bin/ash
+            - -c
+            - |
+              if [ "${TUNNEL_TOKEN}" == "" ]; then 
+                echo "cloudflare token not found. we will hang here forever"
+                sleep infinity
+              fi
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: tunnel-token
+                  name: cloudflare
+                  optional: true
+      containers:
+        - name: tunnel
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          image: cloudflare/cloudflared:2024.12.2
+          imagePullPolicy: IfNotPresent
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: tunnel-token
+                  name: cloudflare
+                  optional: true
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflare
+            optional: true
+            items:
+              - key: config.yaml
+                path: config.yaml
