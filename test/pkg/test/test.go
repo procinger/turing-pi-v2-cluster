@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"reflect"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
@@ -20,7 +21,12 @@ import (
 	"time"
 )
 
-func PrepareTest(applicationYaml string, argoAppCurrent *argocd.Application, argoAppUpdate *argocd.Application) error {
+func PrepareTest(
+	applicationYaml string,
+	argoAppCurrent *argocd.Application,
+	argoAppUpdate *argocd.Application,
+	k8sObjects ...*[]runtime.Object,
+) error {
 	currGitBranch, err := helper.GetCurrentGitBranch()
 	if err != nil {
 		return err
@@ -48,11 +54,17 @@ func PrepareTest(applicationYaml string, argoAppCurrent *argocd.Application, arg
 	if argoAppCurrent.Spec.Source == nil && argoAppCurrent.Spec.Sources == nil {
 		*argoAppCurrent = *argoAppUpdate
 		*argoAppUpdate = argocd.Application{}
-		return nil
 	}
 
 	if reflect.DeepEqual(argoAppCurrent, argoAppUpdate) {
 		*argoAppUpdate = argocd.Application{}
+	}
+
+	if k8sObjects != nil {
+		*k8sObjects[0], err = helper.GetKubernetesManifests(*argoAppCurrent)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -105,7 +117,7 @@ func DeployHelmCharts(argoApplication argocd.Application, cfg *envconf.Config) e
 	return nil
 }
 
-func getClient() (*kubernetes.Clientset, error) {
+func GetClient() (*kubernetes.Clientset, error) {
 	cfg := envconf.Config{}
 	kubeConfig := cfg.Client().RESTConfig()
 	clientSet, err := kubernetes.NewForConfig(kubeConfig)
@@ -160,7 +172,7 @@ func CheckPodsBecameReady(argoApplication argocd.Application) error {
 }
 
 func CheckJobsCompleted(argoApplication argocd.Application, ctx context.Context) error {
-	clientSet, err := getClient()
+	clientSet, err := GetClient()
 	if err != nil {
 		return err
 	}
@@ -186,7 +198,7 @@ func CheckJobsCompleted(argoApplication argocd.Application, ctx context.Context)
 }
 
 func DeploymentBecameReady(argoApplication argocd.Application) error {
-	clientSet, err := getClient()
+	clientSet, err := GetClient()
 	if err != nil {
 		return err
 	}
