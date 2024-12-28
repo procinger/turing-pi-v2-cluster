@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	"log/slog"
 	"reflect"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
@@ -96,6 +97,7 @@ func DeployHelmCharts(argoApplication argocd.Application, cfg *envconf.Config) e
 
 		err := deployHelmChart(*argoApplication.Spec.Source, argoApplication.Spec.Destination.Namespace, cfg)
 		if err != nil {
+			slog.Error(err.Error())
 			return err
 		}
 
@@ -110,6 +112,7 @@ func DeployHelmCharts(argoApplication argocd.Application, cfg *envconf.Config) e
 
 		err := deployHelmChart(source, argoApplication.Spec.Destination.Namespace, cfg)
 		if err != nil {
+			slog.Error(err.Error())
 			return err
 		}
 	}

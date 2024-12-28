@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"test/test/pkg/types/argocd"
@@ -52,6 +53,7 @@ func prepareKubernetesManifests(applicationSource argocd.ApplicationSource) ([]b
 	realPath := "../" + applicationSource.Path
 	yamlFiles, err := os.ReadDir(realPath)
 	if err != nil {
+		slog.Error("Failed to read directory " + realPath)
 		return nil, err
 	}
 
@@ -85,6 +87,7 @@ func unmarshal(yaml []byte) ([]runtime.Object, error) {
 
 		object, err := Decode(file)
 		if err != nil {
+			slog.Error("Failed to decode kubernetes resource " + string(file))
 			return nil, err
 		}
 
