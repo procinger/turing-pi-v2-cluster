@@ -13,7 +13,7 @@ spec:
   sources:
     - path: ./kubernetes-services/additions/cloudflare-tunnel
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
-      targetRevision: feat/cloudflare-tunnel
+      targetRevision: main
   syncPolicy:
     automated:
       prune: true
