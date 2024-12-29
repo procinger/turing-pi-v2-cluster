@@ -24,8 +24,9 @@ spec:
             enabled: true
         defaultSettings:
           concurrentAutomaticEngineUpgradePerNodeLimit: 3
+          snapshotMaxCount: 5
         persistence:
-          defaultClassReplicaCount: 4
+          defaultClassReplicaCount: 3
   syncPolicy:
     automated:
       prune: true
