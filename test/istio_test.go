@@ -9,16 +9,16 @@ import (
 	"log"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
+	"test/test/pkg/argo"
 	"test/test/pkg/test"
-	"test/test/pkg/types/argocd"
 	"testing"
 )
 
 var (
-	istioAppCurrent        argocd.Application
-	istioAppUpdate         argocd.Application
-	istioGatewayAppCurrent argocd.Application
-	istioGatewayAppUpdate  argocd.Application
+	istioAppCurrent        argo.Application
+	istioAppUpdate         argo.Application
+	istioGatewayAppCurrent argo.Application
+	istioGatewayAppUpdate  argo.Application
 )
 
 func TestIstio(t *testing.T) {
@@ -30,6 +30,11 @@ func TestIstio(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
+	}
+
+	client, err := test.GetClient()
+	if err != nil {
+		t.Fatalf("Failed to get kubernetes client #%v", err)
 	}
 
 	err = test.PrepareTest(
@@ -55,10 +60,10 @@ func TestIstio(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(istioAppCurrent)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = test.DeploymentBecameReady(istioGatewayAppCurrent)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -122,10 +127,10 @@ func TestIstio(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(istioAppUpdate)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = test.DeploymentBecameReady(istioGatewayAppUpdate)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

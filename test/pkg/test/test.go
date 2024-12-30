@@ -2,39 +2,45 @@ package test
 
 import (
 	"context"
-	"fmt"
+	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"log/slog"
 	"reflect"
+	"sigs.k8s.io/e2e-framework/klient"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
-	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"strings"
-	"test/test/pkg/helper"
-	"test/test/pkg/types/argocd"
+	"test/test/pkg/argo"
+	"test/test/pkg/git"
+	"test/test/pkg/helm"
+	"test/test/pkg/manifest"
 	"time"
 )
 
 func PrepareTest(
 	applicationYaml string,
-	argoAppCurrent *argocd.Application,
-	argoAppUpdate *argocd.Application,
-	k8sObjects ...*[]runtime.Object,
+	argoAppCurrent *argo.Application,
+	argoAppUpdate *argo.Application,
+	objects ...*[]k8s.Object,
 ) error {
-	currGitBranch, err := helper.GetCurrentGitBranch()
+	currGitBranch, err := git.GetCurrentGitBranch()
 	if err != nil {
 		return err
 	}
 
 	if currGitBranch == "main" {
-		*argoAppCurrent, err = helper.GetArgoApplication(applicationYaml)
+		*argoAppCurrent, err = argo.GetArgoApplication(applicationYaml)
 		if err != nil {
 			return err
 		}
@@ -42,46 +48,46 @@ func PrepareTest(
 		return nil
 	}
 
-	*argoAppCurrent, err = helper.GetArgoApplicationFromGit(applicationYaml)
+	*argoAppCurrent, err = argo.GetArgoApplicationFromGit(applicationYaml)
 	if err != nil {
 		return err
 	}
 
-	*argoAppUpdate, err = helper.GetArgoApplication(applicationYaml)
+	*argoAppUpdate, err = argo.GetArgoApplication(applicationYaml)
 	if err != nil {
 		return err
+	}
+
+	if objects != nil {
+		*objects[0], err = manifest.GetKubernetesManifests(*argoAppUpdate)
+		if err != nil {
+			return err
+		}
 	}
 
 	if argoAppCurrent.Spec.Source == nil && argoAppCurrent.Spec.Sources == nil {
 		*argoAppCurrent = *argoAppUpdate
-		*argoAppUpdate = argocd.Application{}
+		*argoAppUpdate = argo.Application{}
 	}
 
 	if reflect.DeepEqual(argoAppCurrent, argoAppUpdate) {
-		*argoAppUpdate = argocd.Application{}
-	}
-
-	if k8sObjects != nil {
-		*k8sObjects[0], err = helper.GetKubernetesManifests(*argoAppCurrent)
-		if err != nil {
-			return err
-		}
+		*argoAppUpdate = argo.Application{}
 	}
 
 	return nil
 }
 
-func deployHelmChart(applicationSource argocd.ApplicationSource, namespace string, cfg *envconf.Config) error {
-	helmMgr := helper.GetHelmManager(cfg)
+func deployHelmChart(applicationSource argo.ApplicationSource, namespace string, cfg *envconf.Config) error {
+	helmMgr := helm.GetHelmManager(cfg)
 
 	if !strings.Contains(applicationSource.RepoURL, "oci://") {
-		err := helper.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
+		err := helm.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
 		if err != nil {
 			return err
 		}
 	}
 
-	err := helper.DeployHelmChart(helmMgr, applicationSource, namespace)
+	err := helm.DeployHelmChart(helmMgr, applicationSource, namespace)
 	if err != nil {
 		return err
 	}
@@ -89,7 +95,7 @@ func deployHelmChart(applicationSource argocd.ApplicationSource, namespace strin
 	return nil
 }
 
-func DeployHelmCharts(argoApplication argocd.Application, cfg *envconf.Config) error {
+func DeployHelmCharts(argoApplication argo.Application, cfg *envconf.Config) error {
 	if argoApplication.Spec.Source != nil {
 		if argoApplication.Spec.Source.Chart == "" {
 			return nil
@@ -104,7 +110,7 @@ func DeployHelmCharts(argoApplication argocd.Application, cfg *envconf.Config) e
 		return nil
 	}
 
-	var source argocd.ApplicationSource
+	var source argo.ApplicationSource
 	for _, source = range argoApplication.Spec.Sources {
 		if source.Chart == "" {
 			continue
@@ -120,9 +126,18 @@ func DeployHelmCharts(argoApplication argocd.Application, cfg *envconf.Config) e
 	return nil
 }
 
-func GetClient() (*kubernetes.Clientset, error) {
+func GetClient() (klient.Client, error) {
 	cfg := envconf.Config{}
-	kubeConfig := cfg.Client().RESTConfig()
+	return cfg.Client(), nil
+}
+
+func GetRestConfig() *rest.Config {
+	client, _ := GetClient()
+	return client.RESTConfig()
+}
+
+func GetClientSet() (*kubernetes.Clientset, error) {
+	kubeConfig := GetRestConfig()
 	clientSet, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
@@ -131,64 +146,31 @@ func GetClient() (*kubernetes.Clientset, error) {
 	return clientSet, nil
 }
 
-func CheckPodsBecameReady(argoApplication argocd.Application) error {
-	cfg := envconf.Config{}
-	podList := corev1.PodList{}
-	var source argocd.ApplicationSource
-
-	for _, source = range argoApplication.Spec.Sources {
-		if source.Chart == "" {
-			continue
-		}
-
-		err := cfg.Client().Resources(argoApplication.Spec.Destination.Namespace).
-			List(context.TODO(), &podList, resources.WithLabelSelector(
-				labels.FormatLabels(map[string]string{
-					"helm.sh/chart": fmt.Sprintf("%s-%s",
-						source.Chart,
-						source.TargetRevision,
-					),
-				})),
-			)
-
-		if err != nil {
-			return err
-		}
-
-		for i := range podList.Items {
-			if podList.Items[i].OwnerReferences[0].Kind == "Job" {
-				continue
-			}
-
-			err = wait.For(
-				conditions.New(cfg.Client().Resources().WithNamespace(argoApplication.Spec.Destination.Namespace)).
-					PodReady(&podList.Items[i]), wait.WithTimeout(time.Minute*10),
-			)
-
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
+func GetDynClient() (*dynamic.DynamicClient, error) {
+	kubeConfig := GetRestConfig()
+	return dynamic.NewForConfig(kubeConfig)
 }
 
-func CheckJobsCompleted(argoApplication argocd.Application, ctx context.Context) error {
-	clientSet, err := GetClient()
+func GetDiscoveryClient() (*discovery.DiscoveryClient, error) {
+	kubeConfig := GetRestConfig()
+	return discovery.NewDiscoveryClientForConfig(kubeConfig)
+}
+
+func CheckJobsCompleted(ctx context.Context, client klient.Client, namespace string) error {
+	kubeConfig := client.RESTConfig()
+	clientSet, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
 	}
 
-	jobsList, err := clientSet.BatchV1().Jobs(argoApplication.Spec.Destination.Namespace).List(ctx, metav1.ListOptions{})
+	jobsList, err := clientSet.BatchV1().Jobs(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 
-	cfg := envconf.Config{}
 	for i := range jobsList.Items {
 		err = wait.For(
-			conditions.New(cfg.Client().Resources().WithNamespace(argoApplication.Spec.Destination.Namespace)).
+			conditions.New(client.Resources().WithNamespace(namespace)).
 				JobCompleted(&jobsList.Items[i]), wait.WithTimeout(time.Minute*10),
 		)
 
@@ -200,13 +182,14 @@ func CheckJobsCompleted(argoApplication argocd.Application, ctx context.Context)
 	return nil
 }
 
-func DeploymentBecameReady(argoApplication argocd.Application) error {
-	clientSet, err := GetClient()
+func DeploymentBecameReady(ctx context.Context, client klient.Client, namespace string) error {
+	kubeConfig := client.RESTConfig()
+	clientSet, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
 	}
 
-	deploymentList, err := clientSet.AppsV1().Deployments(argoApplication.Spec.Destination.Namespace).List(context.TODO(), metav1.ListOptions{})
+	deploymentList, err := clientSet.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -217,10 +200,119 @@ func DeploymentBecameReady(argoApplication argocd.Application) error {
 			return dep.Status.Replicas == dep.Status.ReadyReplicas
 		}
 
-		cfg := envconf.Config{}
 		err = wait.For(
-			conditions.New(cfg.Client().Resources()).ResourceMatch(&deploymentList.Items[i], isDeploymentDone),
+			conditions.New(client.Resources()).ResourceMatch(&deploymentList.Items[i], isDeploymentDone),
 			wait.WithTimeout(time.Minute*5),
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func DaemonSetBecameReady(ctx context.Context, client klient.Client, namespace string) error {
+	kubeConfig := client.RESTConfig()
+	clientSet, err := kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		return err
+	}
+
+	daemonSetList, err := clientSet.AppsV1().DaemonSets(namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for i := range daemonSetList.Items {
+		var isDaemonSetDone = func(object k8s.Object) bool {
+			dep := object.(*appsv1.DaemonSet)
+			return dep.Status.DesiredNumberScheduled == dep.Status.NumberReady
+		}
+
+		err = wait.For(
+			conditions.New(client.Resources()).ResourceMatch(&daemonSetList.Items[i], isDaemonSetDone),
+			wait.WithTimeout(time.Minute*5),
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func PersistentVolumeClaimIsBound(ctx context.Context, client klient.Client, namespace string) error {
+	kubeConfig := client.RESTConfig()
+	clientSet, err := kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		return err
+	}
+
+	pvcList, err := clientSet.CoreV1().PersistentVolumeClaims(namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for i := range pvcList.Items {
+		var isBound = func(object k8s.Object) bool {
+			dep := object.(*corev1.PersistentVolumeClaim)
+			return dep.Status.Phase == corev1.ClaimBound
+		}
+
+		err = wait.For(
+			conditions.New(client.Resources()).ResourceMatch(&pvcList.Items[i], isBound),
+			wait.WithTimeout(time.Minute*10),
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func SnapshotIsReadyToUse(ctx context.Context, client klient.Client, namespace string) error {
+	kubeConfig := client.RESTConfig()
+	dynClient, err := dynamic.NewForConfig(kubeConfig)
+	if err != nil {
+		return err
+	}
+
+	gvr := schema.GroupVersionResource{
+		Group:    "snapshot.storage.k8s.io",
+		Version:  "v1",
+		Resource: "volumesnapshots",
+	}
+
+	snapshotList, err := dynClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		slog.Error("Failed to list VolumeSnapshots: " + err.Error())
+		return err
+	}
+
+	for i := range snapshotList.Items {
+		var isReadyToUse = func(object k8s.Object) bool {
+			unstructuredObj, ok := object.(*unstructured.Unstructured)
+			if !ok {
+				return false
+			}
+
+			volumeSnapshot := &snapshotv1.VolumeSnapshot{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredObj.Object, volumeSnapshot)
+			if err != nil {
+				return false
+			}
+
+			return *volumeSnapshot.Status.ReadyToUse == true
+		}
+
+		err = wait.For(
+			conditions.New(client.Resources()).ResourceMatch(&snapshotList.Items[i], isReadyToUse),
+			wait.WithTimeout(time.Minute*10),
 		)
 
 		if err != nil {

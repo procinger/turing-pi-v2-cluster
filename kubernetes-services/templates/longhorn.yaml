@@ -26,7 +26,7 @@ spec:
             concurrentAutomaticEngineUpgradePerNodeLimit: 3
             snapshotMaxCount: 5
           persistence:
-            defaultClassReplicaCount: 3
+            defaultClassReplicaCount: 4
     - path: ./kubernetes-services/additions/longhorn
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: feat/longhorn-improvements

@@ -7,15 +7,15 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
 	"sigs.k8s.io/e2e-framework/support/kind"
-	"test/test/pkg/types/argocd"
+	"test/test/pkg/argo"
 	"testing"
 )
 
 var (
 	ciTestEnv       env.Environment
 	kindClusterName string
-	argoAppCurrent  argocd.Application
-	argoAppUpdate   argocd.Application
+	argoAppCurrent  argo.Application
+	argoAppUpdate   argo.Application
 )
 
 func TestMain(m *testing.M) {
@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 	kindClusterName = envconf.RandomName("ci-e2e-test", 16)
 
 	ciTestEnv.Setup(
-		envfuncs.CreateCluster(kind.NewProvider(), kindClusterName),
+		envfuncs.CreateClusterWithConfig(kind.NewProvider(), kindClusterName, "kind.yaml"),
 	)
 
 	ciTestEnv.Finish(

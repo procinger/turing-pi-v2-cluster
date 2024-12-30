@@ -29,7 +29,7 @@ func TestPrometheus(t *testing.T) {
 			-1,
 		)
 
-		// also shrink volu
+		// also shrink volume
 		source.Helm.Values = strings.Replace(
 			source.Helm.Values,
 			"storage: 20Gi",
@@ -60,6 +60,11 @@ func TestPrometheus(t *testing.T) {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
+	client, err := test.GetClient()
+	if err != nil {
+		t.Fatalf("Failed to get kubernetes client #%v", err)
+	}
+
 	feature := features.
 		New("Deploying Prometheus Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
@@ -70,7 +75,7 @@ func TestPrometheus(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(argoAppCurrent)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -91,7 +96,7 @@ func TestPrometheus(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(argoAppUpdate)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
