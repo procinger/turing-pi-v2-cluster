@@ -9,25 +9,17 @@ import (
 	"log"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
-	"test/test/pkg/argo"
 	"test/test/pkg/test"
 	"testing"
 )
 
-var (
-	istioAppCurrent        argo.Application
-	istioAppUpdate         argo.Application
-	istioGatewayAppCurrent argo.Application
-	istioGatewayAppUpdate  argo.Application
-)
-
 func TestIstio(t *testing.T) {
-	err := test.PrepareTest(
-		"../kubernetes-services/templates/istio.yaml",
-		&istioAppCurrent,
-		&istioAppUpdate,
-	)
+	istioCurrent, istioUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/istio.yaml")
+	if err != nil {
+		t.Fatalf("Failed to prepare test #%v", err)
+	}
 
+	gatewayCurrent, gatewayUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/istio-gateway.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
@@ -37,33 +29,23 @@ func TestIstio(t *testing.T) {
 		t.Fatalf("Failed to get kubernetes client #%v", err)
 	}
 
-	err = test.PrepareTest(
-		"../kubernetes-services/templates/istio-gateway.yaml",
-		&istioGatewayAppCurrent,
-		&istioGatewayAppUpdate,
-	)
-
-	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
-	}
-
-	feature := features.
+	install := features.
 		New("Deploying Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(istioAppCurrent, cfg)
+			err = test.DeployHelmCharts(istioCurrent, cfg)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(istioGatewayAppCurrent, cfg)
+			err = test.DeployHelmCharts(gatewayCurrent, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, istioCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, gatewayCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -113,29 +95,29 @@ func TestIstio(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if istioAppUpdate.Spec.Sources == nil && istioGatewayAppUpdate.Spec.Sources == nil {
+			if istioUpdate.Spec.Sources == nil && gatewayUpdate.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(istioAppUpdate, cfg)
+			err = test.DeployHelmCharts(istioUpdate, cfg)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(istioGatewayAppUpdate, cfg)
+			err = test.DeployHelmCharts(gatewayUpdate, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, istioUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, gatewayUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
 			}).
 		Feature()
-	ciTestEnv.Test(t, feature, upgrade)
+	ciTestEnv.Test(t, install, upgrade)
 
 }

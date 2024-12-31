@@ -7,15 +7,12 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
 	"sigs.k8s.io/e2e-framework/support/kind"
-	"test/test/pkg/argo"
 	"testing"
 )
 
 var (
 	ciTestEnv       env.Environment
 	kindClusterName string
-	argoAppCurrent  argo.Application
-	argoAppUpdate   argo.Application
 )
 
 func TestMain(m *testing.M) {

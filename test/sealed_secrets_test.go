@@ -10,13 +10,9 @@ import (
 )
 
 func TestSealedSecrets(t *testing.T) {
-	err := test.PrepareTest(
-		"../kubernetes-services/templates/sealed-secrets.yaml",
-		&argoAppCurrent,
-		&argoAppUpdate,
-	)
+	sealedCurrent, sealedUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/sealed-secrets.yaml")
 	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
+		t.Fatalf("Failed to prepare sealed secret test #%v", err)
 	}
 
 	client, err := test.GetClient()
@@ -27,14 +23,14 @@ func TestSealedSecrets(t *testing.T) {
 	install := features.
 		New("Deploying Sealed Secrets Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(sealedCurrent, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, sealedCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -43,18 +39,18 @@ func TestSealedSecrets(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Sealed Secrets Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if argoAppUpdate.Spec.Source == nil {
+			if sealedUpdate.Spec.Source == nil {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(sealedUpdate, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Testing Sealed Secrets upgrade became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, sealedUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

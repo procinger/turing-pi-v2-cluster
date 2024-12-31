@@ -30,51 +30,51 @@ import (
 
 func PrepareTest(
 	applicationYaml string,
-	argoAppCurrent *argo.Application,
-	argoAppUpdate *argo.Application,
-	objects ...*[]k8s.Object,
-) error {
+) (argo.Application, argo.Application, []k8s.Object, error) {
 	currGitBranch, err := git.GetCurrentGitBranch()
 	if err != nil {
-		return err
+		return argo.Application{}, argo.Application{}, nil, err
 	}
 
 	if currGitBranch == "main" {
-		*argoAppCurrent, err = argo.GetArgoApplication(applicationYaml)
+		current, err := argo.GetArgoApplication(applicationYaml)
 		if err != nil {
-			return err
+			return argo.Application{}, argo.Application{}, nil, err
 		}
 
-		return nil
-	}
-
-	*argoAppCurrent, err = argo.GetArgoApplicationFromGit(applicationYaml)
-	if err != nil {
-		return err
-	}
-
-	*argoAppUpdate, err = argo.GetArgoApplication(applicationYaml)
-	if err != nil {
-		return err
-	}
-
-	if objects != nil {
-		*objects[0], err = manifest.GetKubernetesManifests(*argoAppUpdate)
+		objects, err := manifest.GetKubernetesManifests(current)
 		if err != nil {
-			return err
+			return current, argo.Application{}, nil, err
 		}
+
+		return current, argo.Application{}, objects, nil
 	}
 
-	if argoAppCurrent.Spec.Source == nil && argoAppCurrent.Spec.Sources == nil {
-		*argoAppCurrent = *argoAppUpdate
-		*argoAppUpdate = argo.Application{}
+	current, err := argo.GetArgoApplicationFromGit(applicationYaml)
+	if err != nil {
+		return argo.Application{}, argo.Application{}, nil, err
 	}
 
-	if reflect.DeepEqual(argoAppCurrent, argoAppUpdate) {
-		*argoAppUpdate = argo.Application{}
+	update, err := argo.GetArgoApplication(applicationYaml)
+	if err != nil {
+		return argo.Application{}, argo.Application{}, nil, err
 	}
 
-	return nil
+	objects, err := manifest.GetKubernetesManifests(update)
+	if err != nil {
+		return argo.Application{}, argo.Application{}, nil, err
+	}
+
+	if current.Spec.Source == nil && update.Spec.Sources == nil {
+		current = update
+		update = argo.Application{}
+	}
+
+	if reflect.DeepEqual(current, update) {
+		update = argo.Application{}
+	}
+
+	return current, update, objects, nil
 }
 
 func deployHelmChart(applicationSource argo.ApplicationSource, namespace string, cfg *envconf.Config) error {

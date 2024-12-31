@@ -11,11 +11,7 @@ import (
 )
 
 func TestArgoCd(t *testing.T) {
-	err := test.PrepareTest(
-		"../kubernetes-services/templates/argo-cd.yaml",
-		&argoAppCurrent,
-		&argoAppUpdate,
-	)
+	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/argo-cd.yaml")
 
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
@@ -29,21 +25,21 @@ func TestArgoCd(t *testing.T) {
 	install := features.
 		New("Deploying Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(current, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err := test.DeploymentBecameReady(ctx, client, current.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Jobs run successfully",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckJobsCompleted(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err := test.CheckJobsCompleted(ctx, client, current.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
@@ -52,25 +48,25 @@ func TestArgoCd(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if argoAppUpdate.Spec.Sources == nil {
+			if update.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
-			err := test.DeployHelmCharts(argoAppUpdate, cfg)
+			err := test.DeployHelmCharts(update, cfg)
 			assert.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err := test.DeploymentBecameReady(ctx, client, update.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Jobs run successfully",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckJobsCompleted(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err := test.CheckJobsCompleted(ctx, client, update.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx

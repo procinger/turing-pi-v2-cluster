@@ -11,13 +11,12 @@ import (
 )
 
 func TestPrometheus(t *testing.T) {
-	err := test.PrepareTest(
-		"../kubernetes-services/templates/prometheus.yaml",
-		&argoAppCurrent,
-		&argoAppUpdate,
-	)
+	promCurrent, promUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/prometheus.yaml")
+	if err != nil {
+		t.Fatalf("Failed to prepare prometheus test #%v", err)
+	}
 
-	for i, source := range argoAppCurrent.Spec.Sources {
+	for i, source := range promCurrent.Spec.Sources {
 		if source.Chart == "" {
 			continue
 		}
@@ -51,13 +50,9 @@ func TestPrometheus(t *testing.T) {
 			-1,
 		)
 
-		if argoAppUpdate.Spec.Sources != nil {
-			argoAppUpdate.Spec.Sources[i].Helm.Values = source.Helm.Values
+		if promCurrent.Spec.Sources != nil {
+			promCurrent.Spec.Sources[i].Helm.Values = source.Helm.Values
 		}
-	}
-
-	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
 	client, err := test.GetClient()
@@ -65,17 +60,17 @@ func TestPrometheus(t *testing.T) {
 		t.Fatalf("Failed to get kubernetes client #%v", err)
 	}
 
-	feature := features.
+	install := features.
 		New("Deploying Prometheus Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(promCurrent, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, promCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -85,23 +80,23 @@ func TestPrometheus(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Prometheus Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if argoAppUpdate.Spec.Sources == nil {
+			if promUpdate.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(argoAppUpdate, cfg)
+			err = test.DeployHelmCharts(promUpdate, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, promUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
 			}).
 		Feature()
-	ciTestEnv.Test(t, feature, upgrade)
+	ciTestEnv.Test(t, install, upgrade)
 
 }
