@@ -6,16 +6,16 @@ import (
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
+	"test/test/pkg/argo"
 	"test/test/pkg/test"
-	"test/test/pkg/types/argocd"
 	"testing"
 )
 
 var (
-	kargoAppCurrent       argocd.Application
-	kargoAppUpdate        argocd.Application
-	certManagerAppCurrent argocd.Application
-	certManagerAppUpdate  argocd.Application
+	kargoAppCurrent       argo.Application
+	kargoAppUpdate        argo.Application
+	certManagerAppCurrent argo.Application
+	certManagerAppUpdate  argo.Application
 )
 
 func TestKargo(t *testing.T) {
@@ -39,6 +39,11 @@ func TestKargo(t *testing.T) {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
+	client, err := test.GetClient()
+	if err != nil {
+		t.Fatalf("Failed to get kubernetes client #%v", err)
+	}
+
 	install := features.
 		New("Deploying Kargo.io Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
@@ -57,7 +62,7 @@ func TestKargo(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(kargoAppCurrent)
+				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
@@ -81,7 +86,7 @@ func TestKargo(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(kargoAppUpdate)
+				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx

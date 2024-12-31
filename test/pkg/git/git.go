@@ -1,4 +1,4 @@
-package helper
+package git
 
 import (
 	"os/exec"

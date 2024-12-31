@@ -19,6 +19,11 @@ func TestCertManager(t *testing.T) {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
+	client, err := test.GetClient()
+	if err != nil {
+		t.Fatalf("Failed to get kubernetes client #%v", err)
+	}
+
 	install := features.
 		New("Deploying Cert Manager Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
@@ -29,7 +34,7 @@ func TestCertManager(t *testing.T) {
 		}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(argoAppCurrent)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -49,7 +54,7 @@ func TestCertManager(t *testing.T) {
 		}).
 		Assess("Testing Cert Manager upgrade became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(argoAppUpdate)
+				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

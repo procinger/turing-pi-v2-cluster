@@ -10,22 +10,26 @@ spec:
     server: https://kubernetes.default.svc
     namespace: longhorn
   project: kubernetes
-  source:
-    chart: longhorn
-    repoURL: https://charts.longhorn.io/
-    targetRevision: 1.7.2
-    helm:
-      values: |
-        preUpgradeChecker:
-          jobEnabled: false
-        enablePSP: false
-        metrics:
-          serviceMonitor:
-            enabled: true
-        defaultSettings:
-          concurrentAutomaticEngineUpgradePerNodeLimit: 3
-        persistence:
-          defaultClassReplicaCount: 4
+  sources:
+    - chart: longhorn
+      repoURL: https://charts.longhorn.io/
+      targetRevision: 1.7.2
+      helm:
+        values: |
+          preUpgradeChecker:
+            jobEnabled: false
+          enablePSP: false
+          metrics:
+            serviceMonitor:
+              enabled: true
+          defaultSettings:
+            concurrentAutomaticEngineUpgradePerNodeLimit: 3
+            snapshotMaxCount: 5
+          persistence:
+            defaultClassReplicaCount: 4
+    - path: ./kubernetes-services/additions/longhorn
+      repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
+      targetRevision: feat/longhorn-improvements
   syncPolicy:
     automated:
       prune: true

@@ -21,6 +21,11 @@ func TestArgoCd(t *testing.T) {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
+	client, err := test.GetClient()
+	if err != nil {
+		t.Fatalf("Failed to get kubernetes client #%v", err)
+	}
+
 	install := features.
 		New("Deploying Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
@@ -31,14 +36,14 @@ func TestArgoCd(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(argoAppCurrent)
+				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Jobs run successfully",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckJobsCompleted(argoAppCurrent, ctx)
+				err := test.CheckJobsCompleted(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
@@ -58,14 +63,14 @@ func TestArgoCd(t *testing.T) {
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(argoAppUpdate)
+				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Jobs run successfully",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.CheckJobsCompleted(argoAppCurrent, ctx)
+				err := test.CheckJobsCompleted(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx

@@ -1,4 +1,4 @@
-package helper
+package helm
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 	"strings"
-	"test/test/pkg/types/argocd"
+	"test/test/pkg/argo"
 )
 
 type HelmOptions struct {
@@ -35,7 +35,7 @@ func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string, helmChartName 
 	return nil
 }
 
-func helmifyApp(app argocd.ApplicationSource, namespace string) (HelmOptions, error) {
+func helmifyApp(app argo.ApplicationSource, namespace string) (HelmOptions, error) {
 	fullChartName := getFullChartName(app.Chart, app.Chart)
 	helmOciRepository := ""
 
@@ -71,7 +71,7 @@ func getFullChartName(helmRepoName string, helmChart string) string {
 	return fmt.Sprintf("%s/%s", helmRepoName, helmChart)
 }
 
-func helmValuesToFile(applicationSource argocd.ApplicationSource) error {
+func helmValuesToFile(applicationSource argo.ApplicationSource) error {
 	helmValues, err := os.Create("/tmp/helm-values.txt")
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func helmValuesToFile(applicationSource argocd.ApplicationSource) error {
 	return nil
 }
 
-func DeployHelmChart(helmMgr *helm.Manager, applicationSource argocd.ApplicationSource, namespace string) error {
+func DeployHelmChart(helmMgr *helm.Manager, applicationSource argo.ApplicationSource, namespace string) error {
 	helmOptions, err := helmifyApp(applicationSource, namespace)
 	if err != nil {
 		return err
