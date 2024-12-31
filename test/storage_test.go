@@ -177,16 +177,23 @@ csi:
 				-1,
 			)
 
-			err = test.DeployHelmCharts(snapshotControllerAppUpdate, cfg)
-			require.NoError(t, err)
+			if snapshotControllerAppUpdate.Spec.Sources != nil {
+				err = test.DeployHelmCharts(snapshotControllerAppUpdate, cfg)
+				require.NoError(t, err)
+			}
 
-			err = test.DeployHelmCharts(longhornAppUpdate, cfg)
-			require.NoError(t, err)
-
+			if longhornAppUpdate.Spec.Sources != nil {
+				err = test.DeployHelmCharts(longhornAppUpdate, cfg)
+				require.NoError(t, err)
+			}
 			return ctx
 		}).
 		Assess("Longhorn DaemonSet became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+				if longhornAppUpdate.Spec.Sources == nil {
+					t.SkipNow()
+				}
+
 				err = test.DaemonSetBecameReady(ctx, client, longhornAppUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
@@ -194,6 +201,10 @@ csi:
 			}).
 		Assess("Longhorn Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+				if longhornAppUpdate.Spec.Sources == nil {
+					t.SkipNow()
+				}
+
 				err = test.DeploymentBecameReady(ctx, client, longhornAppUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
@@ -201,6 +212,10 @@ csi:
 			}).
 		Assess("Snapshot Controller Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+				if snapshotControllerAppUpdate.Spec.Sources == nil {
+					t.SkipNow()
+				}
+
 				err = test.DeploymentBecameReady(ctx, client, snapshotControllerAppUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
