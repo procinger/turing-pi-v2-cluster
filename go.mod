@@ -3,7 +3,6 @@ module test
 go 1.23.4
 
 require (
-	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.3.0
 	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.2.0
 	github.com/stretchr/testify v1.10.0
 	k8s.io/api v0.32.0
