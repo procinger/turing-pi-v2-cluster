@@ -40,7 +40,7 @@ jobs:
             go_test:
               - test/**_test.go
             go_helper:
-              - test/**/**.go
+              - test/pkg/**/**.go
             go_dependencies:
               - go.mod
       - uses: actions/setup-go@v5
