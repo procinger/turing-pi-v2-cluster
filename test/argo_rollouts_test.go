@@ -46,7 +46,7 @@ func TestArgoRollouts(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Argo Rollouts Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if argoAppUpdate.Spec.Sources == nil {
+			if argoAppUpdate.Spec.Source == nil {
 				t.SkipNow()
 			}
 
