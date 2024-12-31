@@ -10,11 +10,7 @@ import (
 )
 
 func TestCertManager(t *testing.T) {
-	err := test.PrepareTest(
-		"../kubernetes-services/templates/cert-manager.yaml",
-		&argoAppCurrent,
-		&argoAppUpdate,
-	)
+	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/cert-manager.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
@@ -27,14 +23,14 @@ func TestCertManager(t *testing.T) {
 	install := features.
 		New("Deploying Cert Manager Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(current, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, current.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -43,18 +39,18 @@ func TestCertManager(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Cert Manager Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if argoAppUpdate.Spec.Source == nil {
+			if update.Spec.Source == nil {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(update, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Testing Cert Manager upgrade became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err = test.DeploymentBecameReady(ctx, client, update.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

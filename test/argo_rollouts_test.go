@@ -11,11 +11,7 @@ import (
 )
 
 func TestArgoRollouts(t *testing.T) {
-	err := test.PrepareTest(
-		"../kubernetes-services/templates/argo-rollouts.yaml",
-		&argoAppCurrent,
-		&argoAppUpdate,
-	)
+	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/argo-rollouts.yaml")
 
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
@@ -29,14 +25,14 @@ func TestArgoRollouts(t *testing.T) {
 	install := features.
 		New("Deploying Argo Rollouts Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(argoAppCurrent, cfg)
+			err = test.DeployHelmCharts(current, cfg)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err := test.DeploymentBecameReady(ctx, client, current.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
@@ -46,18 +42,18 @@ func TestArgoRollouts(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Argo Rollouts Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if argoAppUpdate.Spec.Source == nil {
+			if update.Spec.Source == nil {
 				t.SkipNow()
 			}
 
-			err := test.DeployHelmCharts(argoAppUpdate, cfg)
+			err := test.DeployHelmCharts(update, cfg)
 			assert.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err := test.DeploymentBecameReady(ctx, client, update.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx

@@ -24,15 +24,7 @@ metadata:
   name: %s
 
 `
-
-	var additionalManifests []k8s.Object
-	err := test.PrepareTest(
-		"../kubernetes-services/templates/cloudflare-tunnel.yaml",
-		&argoAppCurrent,
-		&argoAppUpdate,
-		&additionalManifests,
-	)
-
+	current, _, additionalManifests, err := test.PrepareTest("../kubernetes-services/templates/cloudflare-tunnel.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
@@ -52,7 +44,7 @@ metadata:
 		New("Preparing Cloudflare Tunnel Test").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			cloudflareTunnelDeployment := additionalManifests[0].(*v1.Deployment)
-			cloudflareTunnelDeployment.ObjectMeta.Namespace = argoAppCurrent.Spec.Destination.Namespace
+			cloudflareTunnelDeployment.ObjectMeta.Namespace = current.Spec.Destination.Namespace
 
 			// delete initContainers, we do not have the tunnel token in ci
 			cloudflareTunnelDeployment.Spec.Template.Spec.InitContainers = nil
@@ -85,7 +77,7 @@ metadata:
 			}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, argoAppCurrent.Spec.Destination.Namespace)
+				err := test.DeploymentBecameReady(ctx, client, current.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
