@@ -29,7 +29,7 @@ spec:
             defaultClassReplicaCount: 4
     - path: ./kubernetes-services/additions/longhorn
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
-      targetRevision: feat/longhorn-improvements
+      targetRevision: main
   syncPolicy:
     automated:
       prune: true
