@@ -72,16 +72,16 @@ spec:
 	feature := features.
 		New("Longhorn CSI Test").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if longhornAppCurrent.Spec.Source != nil {
-				// in ci we run a single node instance of kind
-				longhornAppCurrent.Spec.Source.Helm.Values = strings.Replace(
-					longhornAppCurrent.Spec.Source.Helm.Values,
-					"defaultClassReplicaCount: 4",
-					"defaultClassReplicaCount: 1",
-					-1,
-				)
 
-				longhornAppCurrent.Spec.Source.Helm.Values = `
+			// in ci we run a single node instance of kind
+			longhornAppCurrent.Spec.Sources[0].Helm.Values = strings.Replace(
+				longhornAppCurrent.Spec.Sources[0].Helm.Values,
+				"defaultClassReplicaCount: 4",
+				"defaultClassReplicaCount: 1",
+				-1,
+			)
+
+			longhornAppCurrent.Spec.Sources[0].Helm.Values = `
 csi:
   attacherReplicaCount: 1
   provisionerReplicaCount: 1
@@ -89,14 +89,13 @@ csi:
   snapshotterReplicaCount: 1
 `
 
-				// we also do not have prometheus
-				longhornAppCurrent.Spec.Source.Helm.Values = strings.Replace(
-					longhornAppCurrent.Spec.Source.Helm.Values,
-					"serviceMonitor:\n    enabled: true",
-					"serviceMonitor:\n    enabled: false",
-					-1,
-				)
-			}
+			// we also do not have prometheus
+			longhornAppCurrent.Spec.Sources[0].Helm.Values = strings.Replace(
+				longhornAppCurrent.Spec.Sources[0].Helm.Values,
+				"serviceMonitor:\n    enabled: true",
+				"serviceMonitor:\n    enabled: false",
+				-1,
+			)
 
 			return ctx
 		}).
