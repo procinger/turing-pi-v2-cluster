@@ -25,7 +25,7 @@ func TestArgoCd(t *testing.T) {
 	install := features.
 		New("Deploying Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(current, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), current)
 			require.NoError(t, err)
 
 			return ctx
@@ -52,7 +52,7 @@ func TestArgoCd(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err := test.DeployHelmCharts(update, cfg)
+			err := test.DeployHelmCharts(cfg.KubeconfigFile(), update)
 			assert.NoError(t, err)
 
 			return ctx

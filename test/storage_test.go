@@ -80,10 +80,10 @@ csi:
 		}).
 		Assess("Deploying CSI Helm Charts",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeployHelmCharts(scCurrent, cfg)
+				err = test.DeployHelmCharts(cfg.KubeconfigFile(), scCurrent)
 				require.NoError(t, err)
 
-				err = test.DeployHelmCharts(longhornCurrent, cfg)
+				err = test.DeployHelmCharts(cfg.KubeconfigFile(), longhornCurrent)
 				require.NoError(t, err)
 
 				return ctx
@@ -136,7 +136,7 @@ csi:
 			}
 
 			if scUpdate.Spec.Sources != nil {
-				err = test.DeployHelmCharts(scUpdate, cfg)
+				err = test.DeployHelmCharts(cfg.KubeconfigFile(), scUpdate)
 				require.NoError(t, err)
 			}
 
@@ -165,7 +165,7 @@ csi:
 					-1,
 				)
 
-				err = test.DeployHelmCharts(longhornUpdate, cfg)
+				err = test.DeployHelmCharts(cfg.KubeconfigFile(), longhornUpdate)
 				require.NoError(t, err)
 			}
 			return ctx

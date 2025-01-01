@@ -63,7 +63,7 @@ func TestPrometheus(t *testing.T) {
 	install := features.
 		New("Deploying Prometheus Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(promCurrent, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), promCurrent)
 			require.NoError(t, err)
 
 			return ctx
@@ -84,7 +84,7 @@ func TestPrometheus(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(promUpdate, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), promUpdate)
 			require.NoError(t, err)
 
 			return ctx

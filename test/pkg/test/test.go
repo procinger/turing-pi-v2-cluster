@@ -77,8 +77,8 @@ func PrepareTest(
 	return current, update, objects, nil
 }
 
-func deployHelmChart(applicationSource argo.ApplicationSource, namespace string, cfg *envconf.Config) error {
-	helmMgr := helm.GetHelmManager(cfg)
+func deployHelmChart(applicationSource argo.ApplicationSource, namespace string, kubeConfigFile string) error {
+	helmMgr := helm.GetHelmManager(kubeConfigFile)
 
 	if !strings.Contains(applicationSource.RepoURL, "oci://") {
 		err := helm.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
@@ -95,13 +95,13 @@ func deployHelmChart(applicationSource argo.ApplicationSource, namespace string,
 	return nil
 }
 
-func DeployHelmCharts(argoApplication argo.Application, cfg *envconf.Config) error {
+func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) error {
 	if argoApplication.Spec.Source != nil {
 		if argoApplication.Spec.Source.Chart == "" {
 			return nil
 		}
 
-		err := deployHelmChart(*argoApplication.Spec.Source, argoApplication.Spec.Destination.Namespace, cfg)
+		err := deployHelmChart(*argoApplication.Spec.Source, argoApplication.Spec.Destination.Namespace, kubeConfigFile)
 		if err != nil {
 			slog.Error(err.Error())
 			return err
@@ -116,7 +116,7 @@ func DeployHelmCharts(argoApplication argo.Application, cfg *envconf.Config) err
 			continue
 		}
 
-		err := deployHelmChart(source, argoApplication.Spec.Destination.Namespace, cfg)
+		err := deployHelmChart(source, argoApplication.Spec.Destination.Namespace, kubeConfigFile)
 		if err != nil {
 			slog.Error(err.Error())
 			return err

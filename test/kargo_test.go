@@ -34,10 +34,10 @@ func TestKargo(t *testing.T) {
 			}
 
 			// kargo depends on cert-manager crds
-			err = test.DeployHelmCharts(certCurrent, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), certCurrent)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(kargoCurrent, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), kargoCurrent)
 			require.NoError(t, err)
 
 			return ctx
@@ -61,7 +61,7 @@ func TestKargo(t *testing.T) {
 				kargoUpdate.Spec.Sources[index].RepoURL = "oci://" + kargoUpdate.Spec.Sources[index].RepoURL + "/" + kargoUpdate.Spec.Sources[index].Chart
 			}
 
-			err := test.DeployHelmCharts(kargoUpdate, cfg)
+			err := test.DeployHelmCharts(cfg.KubeconfigFile(), kargoUpdate)
 			assert.NoError(t, err)
 
 			return ctx
