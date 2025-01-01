@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,7 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"log/slog"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"test/test/pkg/test"
 )
@@ -37,10 +37,8 @@ func Apply(clientset kubernetes.Clientset, object runtime.Object) error {
 		err = createCustomResourceDefinition(dynClient, *object.(*unstructured.Unstructured))
 		return err
 	default:
-
+		return errors.New("Unsupported object type " + object.GetObjectKind().GroupVersionKind().String())
 	}
-
-	return nil
 }
 
 func ApplyAll(clientset kubernetes.Clientset, objectList []k8s.Object) error {
@@ -72,14 +70,12 @@ func createPersistentVolumeClaim(clientset kubernetes.Clientset, object corev1.P
 func getResourceName(object unstructured.Unstructured) (string, error) {
 	discoveryClient, err := test.GetDiscoveryClient()
 	if err != nil {
-		slog.Error("Failed to get API resources: " + err.Error())
-		return "", err
+		return "", errors.New("Failed to get discovery client " + err.Error())
 	}
 
 	apiResources, err := discoveryClient.ServerResourcesForGroupVersion(object.GetAPIVersion())
 	if err != nil {
-		slog.Error("Failed to get API resources: " + err.Error())
-		return "", err
+		return "", errors.New("Failed to get api resources " + err.Error())
 	}
 
 	var resourceName string
@@ -96,9 +92,9 @@ func getResourceName(object unstructured.Unstructured) (string, error) {
 func createCustomResourceDefinition(dynClient *dynamic.DynamicClient, object unstructured.Unstructured) error {
 	resourceName, err := getResourceName(object)
 	if err != nil {
-		slog.Error("Failed to create resource: " + err.Error())
+		return err
 	}
-	
+
 	gvr := schema.GroupVersionResource{
 		Group:    object.GroupVersionKind().Group,
 		Version:  object.GroupVersionKind().Version,
@@ -107,7 +103,7 @@ func createCustomResourceDefinition(dynClient *dynamic.DynamicClient, object uns
 
 	_, err = dynClient.Resource(gvr).Namespace(object.GetNamespace()).Create(context.TODO(), &object, metav1.CreateOptions{})
 	if err != nil {
-		slog.Error("Failed to create resource: " + err.Error())
+		return errors.New("Failed to create resource " + err.Error())
 	}
 
 	return nil

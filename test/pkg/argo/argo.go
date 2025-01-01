@@ -1,8 +1,8 @@
 package argo
 
 import (
+	"errors"
 	"io"
-	"log/slog"
 	"net/http"
 	"os"
 	"sigs.k8s.io/yaml"
@@ -13,15 +13,13 @@ import (
 func GetArgoApplication(applicationYaml string) (Application, error) {
 	yamlFile, err := os.ReadFile(applicationYaml)
 	if err != nil {
-		slog.Error("Failed to open application yaml file " + applicationYaml)
-		return Application{}, err
+		return Application{}, errors.New("Failed to open application yaml file " + applicationYaml + ". " + err.Error())
 	}
 
 	argoApplication := &Application{}
 	err = yaml.Unmarshal([]byte(yamlFile), &argoApplication)
 	if err != nil {
-		slog.Error("Failed to unmarshal argo app")
-		return Application{}, err
+		return Application{}, errors.New("Failed to unmarshal argo app." + err.Error())
 	}
 
 	return *argoApplication, nil
@@ -31,14 +29,12 @@ func GetArgoApplicationFromGit(applicationYaml string) (Application, error) {
 	baseUrl := "https://raw.githubusercontent.com/procinger/turing-pi-v2-cluster/refs/heads/main/" + strings.TrimPrefix(applicationYaml, "../")
 	response, err := http.Get(baseUrl)
 	if err != nil {
-		slog.Warn("Failed to fetch application yaml (" + baseUrl + ") from git")
-		return Application{}, err
+		return Application{}, errors.New("Failed to fetch application yaml (" + baseUrl + ") from git. " + err.Error())
 	}
 
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		slog.Warn("Failed to fetch application yaml (" + baseUrl + ") from git. Server gave " + strconv.Itoa(response.StatusCode))
-		return Application{}, err
+		return Application{}, errors.New("Failed to fetch application yaml (" + baseUrl + ") from git. Server gave " + strconv.Itoa(response.StatusCode))
 	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -48,8 +44,7 @@ func GetArgoApplicationFromGit(applicationYaml string) (Application, error) {
 	argoApplication := &Application{}
 	err = yaml.Unmarshal([]byte(body), &argoApplication)
 	if err != nil {
-		slog.Error("Failed to unmarshal argo application")
-		return Application{}, err
+		return Application{}, errors.New("Failed to unmarshal argo app. " + err.Error())
 	}
 
 	return *argoApplication, nil

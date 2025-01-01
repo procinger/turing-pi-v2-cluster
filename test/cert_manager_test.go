@@ -39,7 +39,7 @@ func TestCertManager(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Cert Manager Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if update.Spec.Source == nil {
+			if update.Spec.Sources == nil {
 				t.SkipNow()
 			}
 

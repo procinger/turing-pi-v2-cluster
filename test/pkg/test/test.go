@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"errors"
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -28,9 +29,7 @@ import (
 	"time"
 )
 
-func PrepareTest(
-	applicationYaml string,
-) (argo.Application, argo.Application, []k8s.Object, error) {
+func PrepareTest(applicationYaml string) (argo.Application, argo.Application, []k8s.Object, error) {
 	currGitBranch, err := git.GetCurrentGitBranch()
 	if err != nil {
 		return argo.Application{}, argo.Application{}, nil, err
@@ -50,11 +49,6 @@ func PrepareTest(
 		return current, argo.Application{}, objects, nil
 	}
 
-	current, err := argo.GetArgoApplicationFromGit(applicationYaml)
-	if err != nil {
-		return argo.Application{}, argo.Application{}, nil, err
-	}
-
 	update, err := argo.GetArgoApplication(applicationYaml)
 	if err != nil {
 		return argo.Application{}, argo.Application{}, nil, err
@@ -65,13 +59,19 @@ func PrepareTest(
 		return argo.Application{}, argo.Application{}, nil, err
 	}
 
-	if current.Spec.Source == nil && update.Spec.Sources == nil {
-		current = update
-		update = argo.Application{}
+	current, err := argo.GetArgoApplicationFromGit(applicationYaml)
+	if err != nil {
+		slog.Warn(
+			"Failed to get current application from git",
+			"application", applicationYaml,
+			"branch", currGitBranch,
+			"error", err.Error(),
+		)
+		return update, argo.Application{}, objects, nil
 	}
 
 	if reflect.DeepEqual(current, update) {
-		update = argo.Application{}
+		return current, argo.Application{}, objects, nil
 	}
 
 	return current, update, objects, nil
@@ -103,8 +103,7 @@ func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) e
 
 		err := deployHelmChart(*argoApplication.Spec.Source, argoApplication.Spec.Destination.Namespace, kubeConfigFile)
 		if err != nil {
-			slog.Error(err.Error())
-			return err
+			return errors.New(err.Error())
 		}
 
 		return nil
@@ -118,7 +117,6 @@ func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) e
 
 		err := deployHelmChart(source, argoApplication.Spec.Destination.Namespace, kubeConfigFile)
 		if err != nil {
-			slog.Error(err.Error())
 			return err
 		}
 	}
@@ -290,7 +288,6 @@ func SnapshotIsReadyToUse(ctx context.Context, client klient.Client, namespace s
 
 	snapshotList, err := dynClient.Resource(gvr).Namespace(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
-		slog.Error("Failed to list VolumeSnapshots: " + err.Error())
 		return err
 	}
 
