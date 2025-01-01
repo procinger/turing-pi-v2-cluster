@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	ciTestEnv       env.Environment
-	kindClusterName string
+	ciTestEnv   env.Environment
+	clusterName string
 )
 
 func TestMain(m *testing.M) {
@@ -22,15 +22,15 @@ func TestMain(m *testing.M) {
 	}
 
 	ciTestEnv = env.NewWithConfig(config)
-	kindClusterName = envconf.RandomName("ci-e2e-test", 16)
+	clusterName = envconf.RandomName("ci-e2e-test", 16)
 
 	ciTestEnv.Setup(
-		envfuncs.CreateClusterWithConfig(kind.NewProvider(), kindClusterName, "kind.yaml"),
+		envfuncs.CreateClusterWithConfig(kind.NewProvider(), clusterName, "kind.yaml"),
 	)
 
 	ciTestEnv.Finish(
-		envfuncs.ExportClusterLogs(kindClusterName, "./kind-logs"),
-		envfuncs.DestroyCluster(kindClusterName),
+		envfuncs.ExportClusterLogs(clusterName, "./kind-logs"),
+		envfuncs.DestroyCluster(clusterName),
 	)
 
 	os.Exit(ciTestEnv.Run(m))

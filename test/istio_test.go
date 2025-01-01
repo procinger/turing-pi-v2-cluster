@@ -32,10 +32,10 @@ func TestIstio(t *testing.T) {
 	install := features.
 		New("Deploying Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(istioCurrent, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), istioCurrent)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(gatewayCurrent, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), gatewayCurrent)
 			require.NoError(t, err)
 
 			return ctx
@@ -99,10 +99,10 @@ func TestIstio(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(istioUpdate, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), istioUpdate)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(gatewayUpdate, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), gatewayUpdate)
 			require.NoError(t, err)
 
 			return ctx

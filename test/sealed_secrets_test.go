@@ -23,7 +23,7 @@ func TestSealedSecrets(t *testing.T) {
 	install := features.
 		New("Deploying Sealed Secrets Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(sealedCurrent, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), sealedCurrent)
 			require.NoError(t, err)
 
 			return ctx
@@ -43,7 +43,7 @@ func TestSealedSecrets(t *testing.T) {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(sealedUpdate, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), sealedUpdate)
 			require.NoError(t, err)
 
 			return ctx

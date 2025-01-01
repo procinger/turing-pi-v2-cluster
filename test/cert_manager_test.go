@@ -23,7 +23,7 @@ func TestCertManager(t *testing.T) {
 	install := features.
 		New("Deploying Cert Manager Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(current, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), current)
 			require.NoError(t, err)
 
 			return ctx
@@ -39,11 +39,11 @@ func TestCertManager(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Cert Manager Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if update.Spec.Source == nil {
+			if update.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(update, cfg)
+			err = test.DeployHelmCharts(cfg.KubeconfigFile(), update)
 			require.NoError(t, err)
 
 			return ctx

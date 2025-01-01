@@ -3,7 +3,6 @@ package helm
 import (
 	"fmt"
 	"os"
-	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 	"strings"
 	"test/test/pkg/argo"
@@ -18,8 +17,8 @@ type HelmOptions struct {
 	OciRepository string `default:""`
 }
 
-func GetHelmManager(cfg *envconf.Config) *helm.Manager {
-	return helm.New(cfg.KubeconfigFile())
+func GetHelmManager(kubeConfigFile string) *helm.Manager {
+	return helm.New(kubeConfigFile)
 }
 
 func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string, helmChartName string) error {
