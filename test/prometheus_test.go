@@ -50,9 +50,8 @@ func TestPrometheus(t *testing.T) {
 			-1,
 		)
 
-		if promCurrent.Spec.Sources != nil {
-			promCurrent.Spec.Sources[i].Helm.Values = source.Helm.Values
-		}
+		promCurrent.Spec.Sources[i].Helm.Values = source.Helm.Values
+		promUpdate.Spec.Sources[i].Helm.Values = source.Helm.Values
 	}
 
 	client, err := test.GetClient()
@@ -97,6 +96,6 @@ func TestPrometheus(t *testing.T) {
 				return ctx
 			}).
 		Feature()
-	ciTestEnv.Test(t, install, upgrade)
 
+	ciTestEnv.Test(t, install, upgrade)
 }
