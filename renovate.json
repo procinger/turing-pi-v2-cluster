@@ -46,7 +46,21 @@
       ],
       "labels": [
         "argocd",
-        "helm chart"
+        "helm chart",
+        "istio"
+      ]
+    },
+    {
+      "description": "grouping of monitoring helm charts",
+      "groupName": "monitoring helm charts",
+      "matchPackageNames": [
+        "kube-prometheus-stack",
+        "loki-stack"
+      ],
+      "labels": [
+        "argocd",
+        "helm chart",
+        "monitoring"
       ]
     },
     {

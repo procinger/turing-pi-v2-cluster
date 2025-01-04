@@ -52,7 +52,7 @@ spec:
               size: 1Gi
     - path: ./kubernetes-services/additions/prometheus
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
-      targetRevision: feat/loki-stack
+      targetRevision: main
     - chart: loki-stack
       repoURL: https://grafana.github.io/helm-charts
       targetRevision: 2.10.2
