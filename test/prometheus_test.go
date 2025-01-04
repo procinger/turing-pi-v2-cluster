@@ -51,7 +51,9 @@ func TestPrometheus(t *testing.T) {
 		)
 
 		promCurrent.Spec.Sources[i].Helm.Values = source.Helm.Values
-		promUpdate.Spec.Sources[i].Helm.Values = source.Helm.Values
+		if promUpdate.Spec.Sources != nil {
+			promUpdate.Spec.Sources[i].Helm.Values = source.Helm.Values
+		}
 	}
 
 	client, err := test.GetClient()
