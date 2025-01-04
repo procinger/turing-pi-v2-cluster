@@ -74,6 +74,13 @@ func TestPrometheus(t *testing.T) {
 
 				return ctx
 			}).
+		Assess("Daemonsets became ready",
+			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+				err = test.DaemonSetBecameReady(ctx, client, promCurrent.Spec.Destination.Namespace)
+				require.NoError(t, err)
+
+				return ctx
+			}).
 		Feature()
 
 	upgrade := features.
@@ -91,6 +98,13 @@ func TestPrometheus(t *testing.T) {
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 				err = test.DeploymentBecameReady(ctx, client, promUpdate.Spec.Destination.Namespace)
+				require.NoError(t, err)
+
+				return ctx
+			}).
+		Assess("Daemonsets became ready",
+			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+				err = test.DaemonSetBecameReady(ctx, client, promUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

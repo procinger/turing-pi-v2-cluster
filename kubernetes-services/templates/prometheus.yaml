@@ -53,6 +53,22 @@ spec:
     - path: ./kubernetes-services/additions/prometheus
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: main
+    - chart: loki-stack
+      repoURL: https://grafana.github.io/helm-charts
+      targetRevision: 2.10.2
+      helm:
+        values: |
+          grafana:
+            enabled: false
+          prometheus:
+            enabled: false
+          promtail:
+            enabled: true
+            config:
+              logLevel: info
+              serverPort: 3101
+              clients:
+                - url: http://prometheus-loki:3100/loki/api/v1/push
   syncPolicy:
     automated:
       prune: true
