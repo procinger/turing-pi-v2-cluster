@@ -41,7 +41,7 @@ spec:
               drop:
                 - ALL
             readOnlyRootFilesystem: true
-          image: cloudflare/cloudflared:2024.12.2
+          image: cloudflare/cloudflared:2025.1.0
           imagePullPolicy: IfNotPresent
           args:
             - tunnel
