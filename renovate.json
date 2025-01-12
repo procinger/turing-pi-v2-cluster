@@ -76,6 +76,18 @@
         "k8s api",
         "e2e framework"
       ]
+    },
+    {
+      "description": "grouping of alpine and cloudflare oci artifacts",
+      "groupName": "cloudflare",
+      "matchDatasources": "docker",
+      "matchPackageNames": [
+        "cloudflare/cloudflared",
+        "alpine"
+      ],
+      "labels": [
+        "oci artifacts"
+      ]
     }
   ]
 }
