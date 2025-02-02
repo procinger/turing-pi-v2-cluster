@@ -123,8 +123,10 @@
         "kubernetes-services/additions/k3s-upgrade-controller/kustomize.yaml$"
       ],
       "matchStrings": [
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n.*?-\\s(.*?)/(?<currentValue>[^/]+)/[^/]+\n"
-      ]
+        "# renovate:\\s*datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n.*?-\\s(.*?)/(?<currentValue>[^/]+)/[^/]+\n"
+      ],
+      "datasourceTemplate": "{{{datasource}}}",
+      "depNameTemplate": "{{{depName}}}"
     }
   ]
 }
