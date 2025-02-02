@@ -6,10 +6,13 @@
   "assignees": ["procinger"],
   "prHourlyLimit": 5,
   "prConcurrentLimit": 10,
-  "enabledManagers": ["kubernetes", "argocd", "gomod"],
+  "enabledManagers": ["kubernetes", "argocd", "gomod", "custom"],
   "postUpdateOptions": ["gomodTidy"],
   "kubernetes": {
-    "fileMatch": ["^kubernetes-services/.*\\.yaml$"]
+    "fileMatch": [
+      "^kubernetes-services/.*\\.yaml$",
+      "(^|/)kustomization\\.ya?ml$"
+    ]
   },
   "argocd": {
     "fileMatch": ["^kubernetes-services/templates/.*\\.yaml$"]
@@ -87,6 +90,15 @@
       ],
       "labels": [
         "oci artifacts"
+      ]
+    }
+  ],
+  "regexManagers": [
+    {
+      "description": "K3S System Upgrade Controller CRD",
+      "fileMatch": ["kubernetes-services/additions/k3s-upgrade-controller/kustomize.yaml$"],
+      "matchStrings": [
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n.*?-\\s(.*?)\/(?<currentValue>[^/]+)\/[^/]+\n"
       ]
     }
   ]
