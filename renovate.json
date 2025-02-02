@@ -6,7 +6,7 @@
   "assignees": ["procinger"],
   "prHourlyLimit": 5,
   "prConcurrentLimit": 10,
-  "enabledManagers": ["kubernetes", "argocd", "gomod", "custom"],
+  "enabledManagers": ["kubernetes", "argocd", "gomod", "custom.regex", "kustomize"],
   "postUpdateOptions": ["gomodTidy"],
   "kubernetes": {
     "fileMatch": [
@@ -95,6 +95,7 @@
   ],
   "regexManagers": [
     {
+      "customType": "regex",
       "description": "K3S System Upgrade Controller CRD",
       "fileMatch": ["kubernetes-services/additions/k3s-upgrade-controller/kustomize.yaml$"],
       "matchStrings": [
