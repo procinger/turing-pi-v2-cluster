@@ -5,6 +5,9 @@ import (
 	"os"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
+	"sigs.k8s.io/kustomize/api/krusty"
+	"sigs.k8s.io/kustomize/kyaml/filesys"
+	"strings"
 	"test/test/pkg/argo"
 )
 
@@ -46,4 +49,22 @@ func prepareKubernetesManifests(applicationSource argo.ApplicationSource) ([]k8s
 		return nil, err
 	}
 	return objects, nil
+}
+
+func BuildKustomization(path string) ([]string, error) {
+	fSys := filesys.MakeFsOnDisk()
+	kustomizationDir := "../" + path
+	k := krusty.MakeKustomizer(krusty.MakeDefaultOptions())
+
+	objects, err := k.Run(fSys, kustomizationDir)
+	if err != nil {
+		return nil, err
+	}
+
+	yaml, err := objects.AsYaml()
+	if err != nil {
+		return nil, err
+	}
+
+	return strings.Split(string(yaml), "---"), nil
 }

@@ -11,10 +11,10 @@ spec:
   cordon: true
   nodeSelector:
     matchExpressions:
-      - key: kubernetes.io/os
+      - key: beta.kubernetes.io/instance-type
         operator: In
         values:
-          - 'linux'
+          - 'k3s'
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/k3s-upgrade
