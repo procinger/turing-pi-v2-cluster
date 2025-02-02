@@ -15,7 +15,7 @@ import (
 )
 
 func TestK3sSystemUpgradeController(t *testing.T) {
-	_, update, _, err := test.PrepareTest("../kubernetes-services/templates/k3s-system-upgrade-controller.yaml")
+	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/k3s-system-upgrade-controller.yaml")
 	require.NoError(t, err)
 
 	clientSet, err := test.GetClientSet()
@@ -30,7 +30,11 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 	install := features.
 		New("Kustomization").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			kustomization, err = manifest.BuildKustomization(update.Spec.Sources[0].Path)
+			if update.Spec.Sources != nil {
+				kustomization, err = manifest.BuildKustomization(update.Spec.Sources[0].Path)
+			} else {
+				kustomization, err = manifest.BuildKustomization(current.Spec.Sources[0].Path)
+			}
 			require.NoError(t, err)
 
 			return ctx
