@@ -13,7 +13,7 @@ spec:
   sources:
     - path: ./kubernetes-services/additions/k3s-upgrade-controller
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
-      targetRevision: fix/k3s-upgrade-controller
+      targetRevision: main
   syncPolicy:
     automated:
       prune: true

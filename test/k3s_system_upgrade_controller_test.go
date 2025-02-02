@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"github.com/stretchr/testify/require"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
@@ -26,6 +25,7 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 	require.NoError(t, err)
 
 	var kustomization []string
+	var namespace string
 
 	install := features.
 		New("Kustomization").
@@ -46,6 +46,7 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 						continue
 					}
 
+					namespace = object.GetName()
 					err = api.Apply(*clientSet, &object)
 					require.NoError(t, err)
 
@@ -73,36 +74,11 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 			}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, "system-upgrade")
+				err = test.DeploymentBecameReady(ctx, client, namespace)
 				require.NoError(t, err)
 
 				return ctx
 			}).
-		//		Assess("Plan was applied",
-		//			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-		//				// Give K3S Plan some time
-		//				time.Sleep(60 * time.Second)
-		//
-		//				pods, err := clientSet.CoreV1().Pods("system-upgrade").List(ctx, metav1.ListOptions{
-		//					LabelSelector: "upgrade.cattle.io/plan=k3s-upgrade",
-		//				})
-		//				require.NoError(t, err)
-		//
-		//				log, err := clientSet.CoreV1().Pods("system-upgrade").GetLogs(pods.Items[0].Name, &corev1.PodLogOptions{}).Do(ctx).Raw()
-		//				require.NoError(t, err)
-		//
-		//				// If the following error message is thrown, the upgrade plan has been successfully deployed.
-		//				// However, it fails because we have Kind instead of K3S here
-		//				res := strings.Contains(string(log), "No K3s pids found; is K3s running on this host?")
-		//				require.True(t, res)
-		//
-		//				return ctx
-		//			}).
-		Teardown(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err := clientSet.CoreV1().Namespaces().Delete(ctx, "system-upgrade", metav1.DeleteOptions{})
-			require.NoError(t, err)
-			return ctx
-		}).
 		Feature()
 
 	ciTestEnv.Test(t, install)
