@@ -3,11 +3,21 @@
   "extends": [
     "config:recommended"
   ],
-  "assignees": ["procinger"],
+  "assignees": [
+    "procinger"
+  ],
   "prHourlyLimit": 5,
   "prConcurrentLimit": 10,
-  "enabledManagers": ["kubernetes", "argocd", "gomod", "custom.regex", "kustomize"],
-  "postUpdateOptions": ["gomodTidy"],
+  "enabledManagers": [
+    "kubernetes",
+    "argocd",
+    "gomod",
+    "custom.regex",
+    "kustomize"
+  ],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
   "kubernetes": {
     "fileMatch": [
       "^kubernetes-services/.*\\.yaml$",
@@ -15,11 +25,15 @@
     ]
   },
   "argocd": {
-    "fileMatch": ["^kubernetes-services/templates/.*\\.yaml$"]
+    "fileMatch": [
+      "^kubernetes-services/templates/.*\\.yaml$"
+    ]
   },
   "packageRules": [
     {
-      "matchManagers": ["argocd"],
+      "matchManagers": [
+        "argocd"
+      ],
       "enabled": true,
       "automerge": true,
       "labels": [
@@ -28,16 +42,24 @@
       ]
     },
     {
-      "matchManagers": ["gomod"],
+      "matchManagers": [
+        "gomod"
+      ],
       "enabled": true,
       "automerge": true,
-      "labels": ["golang"]
+      "labels": [
+        "golang"
+      ]
     },
     {
       "description": "respect weird docker versioning",
       "versioning": "docker",
-      "matchDatasources": ["docker"],
-      "labels": ["container image"]
+      "matchDatasources": [
+        "docker"
+      ],
+      "labels": [
+        "container image"
+      ]
     },
     {
       "description": "grouping of istio helm charts",
@@ -93,13 +115,15 @@
       ]
     }
   ],
-  "regexManagers": [
+  "customManagers": [
     {
       "customType": "regex",
       "description": "K3S System Upgrade Controller CRD",
-      "fileMatch": ["kubernetes-services/additions/k3s-upgrade-controller/kustomize.yaml$"],
+      "fileMatch": [
+        "kubernetes-services/additions/k3s-upgrade-controller/kustomize.yaml$"
+      ],
       "matchStrings": [
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n.*?-\\s(.*?)\/(?<currentValue>[^/]+)\/[^/]+\n"
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n.*?-\\s(.*?)/(?<currentValue>[^/]+)/[^/]+\n"
       ]
     }
   ]
