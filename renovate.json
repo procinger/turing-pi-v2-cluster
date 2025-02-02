@@ -12,7 +12,7 @@
     "kubernetes",
     "argocd",
     "gomod",
-    "regex",
+    "custom.regex",
     "kustomize"
   ],
   "postUpdateOptions": [
