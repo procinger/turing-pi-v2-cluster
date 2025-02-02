@@ -6,7 +6,7 @@
   "assignees": ["procinger"],
   "prHourlyLimit": 5,
   "prConcurrentLimit": 10,
-  "enabledManagers": ["kubernetes", "argocd", "gomod", "custom.regex"],
+  "enabledManagers": ["kubernetes", "argocd", "gomod", "custom.regex", "kustomize"],
   "postUpdateOptions": ["gomodTidy"],
   "kubernetes": {
     "fileMatch": [
