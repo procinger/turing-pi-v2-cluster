@@ -13,7 +13,7 @@ spec:
   sources:
     - repoURL: https://charts.jetstack.io
       chart: cert-manager
-      targetRevision: v1.16.3
+      targetRevision: v1.17.0
       helm:
         values: |
           prometheus:
