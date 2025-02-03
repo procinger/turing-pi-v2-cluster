@@ -39,6 +39,8 @@ jobs:
               - kubernetes-services/templates/longhorn.yaml
             k3s_upgrade:
               - kubernetes-services/additions/k3s-upgrade-controller/kustomization.yaml
+            cloudflare:
+              - 'kubernetes-services/additions/cloudflare-tunnel/*'
             go_test:
               - test/**_test.go
             go_helper:
@@ -80,6 +82,10 @@ jobs:
         if: steps.changed-argo-apps.outputs.k3s_upgrade_any_changed == 'true'
         run: |
           go test -v ./test -run TestK3sSystemUpgradeController
+      - name: Test Cloudflare Tunnel
+        if: steps.changed-argo-apps.outputs.cloudflare_any_changed == 'true'
+        run: |
+          go test -v ./test -run TestCloudflareTunnel
       - name: Golang Tests
         if: steps.changed-argo-apps.outputs.go_test_any_changed == 'true'
         env:
