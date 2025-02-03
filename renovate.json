@@ -107,8 +107,18 @@
       "groupName": "cloudflare",
       "matchDatasources": "docker",
       "matchPackageNames": [
-        "cloudflare/cloudflared",
         "alpine"
+      ],
+      "labels": [
+        "oci artifacts"
+      ]
+    },
+    {
+      "description": "grouping of alpine and cloudflare oci artifacts",
+      "groupName": "cloudflare",
+      "matchDatasources": "docker",
+      "matchPackageNames": [
+        "cloudflare/cloudflared"
       ],
       "labels": [
         "oci artifacts"
@@ -120,13 +130,14 @@
       "customType": "regex",
       "description": "K3S System Upgrade Controller CRD",
       "fileMatch": [
-        "kubernetes-services/additions/k3s-upgrade-controller/kustomize.yaml$"
+        "kubernetes-services/additions/k3s-upgrade-controller/kustomization.yaml$"
       ],
       "matchStrings": [
-        "# renovate:\\s*datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n.*?-\\s(.*?)/(?<currentValue>[^/]+)/[^/]+\n"
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\n.*?-\\s(.*?)\/(?<currentValue>[^/]+)\/[^/]+\n"
       ],
-      "datasourceTemplate": "{{{datasource}}}",
-      "depNameTemplate": "{{{depName}}}"
+      "depNameTemplate": "{{{depName}}}",
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     }
   ]
 }
