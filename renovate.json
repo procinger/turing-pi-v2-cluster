@@ -103,26 +103,14 @@
       ]
     },
     {
-      "description": "grouping of alpine and cloudflare oci artifacts",
+      "description": "Grouping of Alpine and Cloudflare OCI artifacts",
       "groupName": "cloudflare",
-      "matchDatasources": "docker",
+      "matchDatasources": ["docker"],
       "matchPackageNames": [
-        "alpine"
-      ],
-      "labels": [
-        "oci artifacts"
-      ]
-    },
-    {
-      "description": "grouping of alpine and cloudflare oci artifacts",
-      "groupName": "cloudflare",
-      "matchDatasources": "docker",
-      "matchPackageNames": [
+        "alpine",
         "cloudflare/cloudflared"
       ],
-      "labels": [
-        "oci artifacts"
-      ]
+      "labels": ["oci artifacts"]
     }
   ],
   "customManagers": [
