@@ -37,6 +37,8 @@ jobs:
             storage:
               - kubernetes-services/templates/snapshot-controller.yaml
               - kubernetes-services/templates/longhorn.yaml
+            k3s_upgrade:
+              - kubernetes-services/additions/k3s-upgrade-controller/kustomization.yaml
             go_test:
               - test/**_test.go
             go_helper:
@@ -74,6 +76,10 @@ jobs:
         if: steps.changed-argo-apps.outputs.storage_any_changed == 'true'
         run: |
           go test -v ./test -run TestStorage
+      - name: Test K3S System Upgrade Controller
+        if: steps.changed-argo-apps.outputs.k3s_upgrade_any_changed == 'true'
+        run: |
+          go test -v ./test -run TestK3sSystemUpgradeController
       - name: Golang Tests
         if: steps.changed-argo-apps.outputs.go_test_any_changed == 'true'
         env:
