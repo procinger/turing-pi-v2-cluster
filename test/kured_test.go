@@ -37,7 +37,7 @@ func TestKured(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Kured Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if update.Spec.Sources == nil {
+			if update.Spec.Source == nil {
 				t.SkipNow()
 			}
 
@@ -48,7 +48,7 @@ func TestKured(t *testing.T) {
 		}).
 		Assess("DaemonSet became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, update.Spec.Destination.Namespace)
+				err := test.DaemonSetBecameReady(ctx, client, update.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
