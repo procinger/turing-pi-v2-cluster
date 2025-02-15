@@ -10,7 +10,7 @@ import (
 )
 
 func TestSealedSecrets(t *testing.T) {
-	sealedCurrent, sealedUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/sealed-secrets.yaml")
+	sealedCurrent, sealedUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/sealed-secrets.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare sealed secret test #%v", err)
 	}

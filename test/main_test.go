@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	ciTestEnv   env.Environment
-	clusterName string
+	ciTestEnv     env.Environment
+	clusterName   string
+	gitRepository string
 )
 
 func TestMain(m *testing.M) {
@@ -20,6 +21,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Println("Could not create config from env", err)
 	}
+
+	gitRepository = "https://raw.githubusercontent.com/procinger/turing-pi-v2-cluster/refs/heads/main/"
 
 	ciTestEnv = env.NewWithConfig(config)
 	clusterName = envconf.RandomName("ci-e2e-test", 16)
