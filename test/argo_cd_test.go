@@ -11,7 +11,7 @@ import (
 )
 
 func TestArgoCd(t *testing.T) {
-	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/argo-cd.yaml")
+	current, update, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/argo-cd.yaml")
 
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)

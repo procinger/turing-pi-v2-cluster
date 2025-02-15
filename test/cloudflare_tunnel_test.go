@@ -24,7 +24,7 @@ metadata:
   name: %s
 
 `
-	current, _, additionalManifests, err := test.PrepareTest("../kubernetes-services/templates/cloudflare-tunnel.yaml")
+	current, _, additionalManifests, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/cloudflare-tunnel.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}

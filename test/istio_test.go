@@ -14,12 +14,12 @@ import (
 )
 
 func TestIstio(t *testing.T) {
-	istioCurrent, istioUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/istio.yaml")
+	istioCurrent, istioUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/istio.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
-	gatewayCurrent, gatewayUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/istio-gateway.yaml")
+	gatewayCurrent, gatewayUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/istio-gateway.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}

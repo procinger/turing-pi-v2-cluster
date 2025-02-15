@@ -11,7 +11,7 @@ import (
 )
 
 func TestArgoRollouts(t *testing.T) {
-	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/argo-rollouts.yaml")
+	current, update, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/argo-rollouts.yaml")
 
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
