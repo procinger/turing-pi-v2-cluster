@@ -52,6 +52,26 @@
       ]
     },
     {
+      "matchManagers": [
+        "kustomize"
+      ],
+      "enabled": true,
+      "automerge": true,
+      "labels": [
+        "kustomize"
+      ]
+    },
+    {
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "enabled": true,
+      "automerge": true,
+      "labels": [
+        "custom regex"
+      ]
+    },
+    {
       "description": "respect weird docker versioning",
       "versioning": "docker",
       "matchDatasources": [
