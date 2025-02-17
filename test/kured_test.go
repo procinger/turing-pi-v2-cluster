@@ -11,7 +11,7 @@ import (
 )
 
 func TestKured(t *testing.T) {
-	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/kured.yaml")
+	current, update, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/kured.yaml")
 	require.NoError(t, err)
 
 	client, err := test.GetClient()

@@ -29,7 +29,7 @@ import (
 	"time"
 )
 
-func PrepareTest(applicationYaml string) (argo.Application, argo.Application, []k8s.Object, error) {
+func PrepareTest(gitRepository string, applicationYaml string) (argo.Application, argo.Application, []k8s.Object, error) {
 	currGitBranch, err := git.GetCurrentGitBranch()
 	if err != nil {
 		return argo.Application{}, argo.Application{}, nil, err
@@ -59,7 +59,7 @@ func PrepareTest(applicationYaml string) (argo.Application, argo.Application, []
 		return argo.Application{}, argo.Application{}, nil, err
 	}
 
-	current, err := argo.GetArgoApplicationFromGit(applicationYaml)
+	current, err := argo.GetArgoApplicationFromGit(gitRepository, applicationYaml)
 	if err != nil {
 		slog.Warn(
 			"Failed to get current application from git",

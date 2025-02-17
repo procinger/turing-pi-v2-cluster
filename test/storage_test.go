@@ -28,12 +28,12 @@ spec:
   storageClassName: longhorn
 `
 
-	scCurrent, scUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/snapshot-controller.yaml")
+	scCurrent, scUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/snapshot-controller.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare shanpshot controller test #%v", err)
 	}
 
-	longhornCurrent, longhornUpdate, manifest, err := test.PrepareTest("../kubernetes-services/templates/longhorn.yaml")
+	longhornCurrent, longhornUpdate, manifest, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/longhorn.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare longhorn csi #%v", err)
 	}

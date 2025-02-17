@@ -15,7 +15,7 @@ import (
 )
 
 func TestK3sSystemUpgradeController(t *testing.T) {
-	current, update, _, err := test.PrepareTest("../kubernetes-services/templates/k3s-system-upgrade-controller.yaml")
+	current, update, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/k3s-system-upgrade-controller.yaml")
 	require.NoError(t, err)
 
 	clientSet, err := test.GetClientSet()
