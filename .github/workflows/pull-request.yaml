@@ -38,9 +38,11 @@ jobs:
               - kubernetes-services/templates/snapshot-controller.yaml
               - kubernetes-services/templates/longhorn.yaml
             k3s_upgrade:
-              - kubernetes-services/additions/k3s-upgrade-controller/kustomization.yaml
+              - 'kubernetes-services/additions/k3s-upgrade-controller/*'
             cloudflare:
               - 'kubernetes-services/additions/cloudflare-tunnel/*'
+            http_echo_server:
+              - 'kubernetes-services/additions/http-echo-server/*'
             go_test:
               - test/**_test.go
             go_helper:
@@ -86,6 +88,10 @@ jobs:
         if: steps.changed-argo-apps.outputs.cloudflare_any_changed == 'true'
         run: |
           go test -v ./test -run TestCloudflareTunnel
+      - name: Http Echo Server
+        if: steps.changed-argo-apps.outputs.http_echo_server == 'true'
+        run: |
+          go test -v ./test -run TestHttpEchoServer
       - name: Golang Tests
         if: steps.changed-argo-apps.outputs.go_test_any_changed == 'true'
         env:
@@ -107,7 +113,7 @@ jobs:
           path: 'test/kind-logs'
           retention-days: 3
 
-  create-resource-diff:
+  create-argocd-diff:
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -25,8 +25,8 @@ func GetArgoApplication(applicationYaml string) (Application, error) {
 	return *argoApplication, nil
 }
 
-func GetArgoApplicationFromGit(applicationYaml string) (Application, error) {
-	baseUrl := "https://raw.githubusercontent.com/procinger/turing-pi-v2-cluster/refs/heads/main/" + strings.TrimPrefix(applicationYaml, "../")
+func GetArgoApplicationFromGit(gitRepository string, applicationYaml string) (Application, error) {
+	baseUrl := gitRepository + strings.TrimPrefix(applicationYaml, "../")
 	response, err := http.Get(baseUrl)
 	if err != nil {
 		return Application{}, errors.New("Failed to fetch application yaml (" + baseUrl + ") from git. " + err.Error())

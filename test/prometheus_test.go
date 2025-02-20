@@ -11,7 +11,7 @@ import (
 )
 
 func TestPrometheus(t *testing.T) {
-	promCurrent, promUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/prometheus.yaml")
+	promCurrent, promUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/prometheus.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare prometheus test #%v", err)
 	}

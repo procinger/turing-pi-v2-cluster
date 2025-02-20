@@ -11,12 +11,12 @@ import (
 )
 
 func TestKargo(t *testing.T) {
-	kargoCurrent, kargoUpdate, _, err := test.PrepareTest("../kubernetes-services/templates/kargo.yaml")
+	kargoCurrent, kargoUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/kargo.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare kargo test #%v", err)
 	}
 
-	certCurrent, _, _, err := test.PrepareTest("../kubernetes-services/templates/cert-manager.yaml")
+	certCurrent, _, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/cert-manager.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare cert-manager #%v", err)
 	}
