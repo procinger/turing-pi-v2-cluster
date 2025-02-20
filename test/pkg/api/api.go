@@ -23,6 +23,9 @@ func Apply(clientset kubernetes.Clientset, object runtime.Object) error {
 	case *corev1.Secret:
 		_, err := createSecret(clientset, *object.(*corev1.Secret))
 		return err
+	case *corev1.Service:
+		_, err := createService(clientset, *object.(*corev1.Service))
+		return err
 	case *appsv1.Deployment:
 		_, err := createDeployment(clientset, *object.(*appsv1.Deployment))
 		return err
@@ -56,15 +59,19 @@ func createNamespace(clientset kubernetes.Clientset, object corev1.Namespace) (*
 }
 
 func createSecret(clientset kubernetes.Clientset, object corev1.Secret) (*corev1.Secret, error) {
-	return clientset.CoreV1().Secrets(object.Namespace).Create(context.TODO(), &object, metav1.CreateOptions{})
+	return clientset.CoreV1().Secrets(object.GetNamespace()).Create(context.TODO(), &object, metav1.CreateOptions{})
+}
+
+func createService(clientset kubernetes.Clientset, object corev1.Service) (*corev1.Service, error) {
+	return clientset.CoreV1().Services(object.GetNamespace()).Create(context.TODO(), &object, metav1.CreateOptions{})
 }
 
 func createDeployment(clientset kubernetes.Clientset, object appsv1.Deployment) (*appsv1.Deployment, error) {
-	return clientset.AppsV1().Deployments(object.Namespace).Create(context.TODO(), &object, metav1.CreateOptions{})
+	return clientset.AppsV1().Deployments(object.GetNamespace()).Create(context.TODO(), &object, metav1.CreateOptions{})
 }
 
 func createPersistentVolumeClaim(clientset kubernetes.Clientset, object corev1.PersistentVolumeClaim) (*corev1.PersistentVolumeClaim, error) {
-	return clientset.CoreV1().PersistentVolumeClaims(object.Namespace).Create(context.TODO(), &object, metav1.CreateOptions{})
+	return clientset.CoreV1().PersistentVolumeClaims(object.GetNamespace()).Create(context.TODO(), &object, metav1.CreateOptions{})
 }
 
 func getResourceName(object unstructured.Unstructured) (string, error) {
