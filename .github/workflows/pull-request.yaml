@@ -1,4 +1,4 @@
-name: Helm Chart Changes
+name: K8S E2E Tests
 on:
   merge_group:
   pull_request:
@@ -14,17 +14,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-helm-chart:
+  analyze-changes:
     runs-on: ubuntu-latest
+    outputs:
+      apps_any_changed: ${{ steps.changed-files.outputs.apps_any_changed }}
+      apps_all_changed_files: ${{ steps.changed-files.outputs.apps_all_changed_files }}
+      istio_any_changed: ${{ steps.changed-files.outputs.istio_any_changed }}
+      istio_all_changed_files: ${{ steps.changed-files.outputs.istio_all_changed_files }}
+      storage_any_changed: ${{ steps.changed-files.outputs.storage_any_changed }}
+      storage_all_changed_files: ${{ steps.changed-files.outputs.storage_all_changed_files }}
+      k3s_upgrade_any_changed: ${{ steps.changed-files.outputs.k3s_upgrade_any_changed }}
+      k3s_upgrade_all_changed_files: ${{ steps.changed-files.outputs.k3s_upgrade_all_changed_files }}
+      cloudflare_any_changed: ${{ steps.changed-files.outputs.cloudflare_any_changed }}
+      cloudflare_all_changed_files: ${{ steps.changed-files.outputs.cloudflare_all_changed_files }}
+      http_echo_server_any_changed: ${{ steps.changed-files.outputs.http_echo_server_any_changed }}
+      http_echo_server_all_changed_files: ${{ steps.changed-files.outputs.http_echo_server_all_changed_files }}
+      go_test_any_changed: ${{ steps.changed-files.outputs.go_test_any_changed }}
+      go_test_all_changed_files: ${{ steps.changed-files.outputs.go_test_all_changed_files }}
+      go_helper_any_changed: ${{ steps.changed-files.outputs.go_helper_any_changed }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: yokawasa/action-setup-kube-tools@v0.11.1
-        with:
-          kubectl: '1.29.0'
-          helm: '3.15.1'
-      - uses: mikefarah/yq@v4.44.2
       - uses: tj-actions/changed-files@v45.0.4
-        id: changed-argo-apps
+        id: changed-files
         with:
           files_yaml: |
             apps:
@@ -47,16 +57,27 @@ jobs:
               - test/**_test.go
             go_helper:
               - test/pkg/**/**.go
-            go_dependencies:
               - go.mod
+              - .github/**
+
+  test-kubernetes-manifest:
+    needs: analyze-changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: yokawasa/action-setup-kube-tools@v0.11.1
+        with:
+          kubectl: '1.29.0'
+          helm: '3.15.1'
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
           cache-dependency-path: go.sum
+
       - name: Test Common Helm Chart
-        if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
+        if: ${{ needs.analyze-changes.outputs.apps_any_changed == 'true' }}
         env:
-          HELM_CHARTS_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.apps_all_changed_files }}
+          HELM_CHARTS_CHANGED_FILES: ${{ needs.analyze-changes.outputs.apps_all_changed_files }}
         run: |
           echo "List all helm charts that have changed"
           for chart in ${HELM_CHARTS_CHANGED_FILES}; do
@@ -70,41 +91,47 @@ jobs:
           
             go test -v ./test -run $(basename ${chart} .yaml | sed 's/.*/Test\u&/' | sed -E 's/-([a-z])/\U\1/g')
           done
+
       - name: Test Istio Helm Chart
-        if: steps.changed-argo-apps.outputs.istio_any_changed == 'true'
-        env:
-          HELM_CHARTS_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.istio_all_changed_files }}
+        if: ${{ needs.analyze-changes.outputs.istio_any_changed == 'true' && needs.analyze-changes.outputs.go_helper_any_changed != 'true' }}
         run: |
           go test -v ./test -run TestIstio
+
       - name: Test Longhorn and Snapshot Controller Charts
-        if: steps.changed-argo-apps.outputs.storage_any_changed == 'true'
+        if: ${{ needs.analyze-changes.outputs.storage_any_changed == 'true' && needs.analyze-changes.outputs.go_helper_any_changed != 'true' }}
         run: |
           go test -v ./test -run TestStorage
+
       - name: Test K3S System Upgrade Controller
-        if: steps.changed-argo-apps.outputs.k3s_upgrade_any_changed == 'true'
+        if: ${{ needs.analyze-changes.outputs.k3s_upgrade_any_changed == 'true' && needs.analyze-changes.outputs.go_helper_any_changed != 'true' }}
         run: |
           go test -v ./test -run TestK3sSystemUpgradeController
+
       - name: Test Cloudflare Tunnel
-        if: steps.changed-argo-apps.outputs.cloudflare_any_changed == 'true'
+        if: ${{ needs.analyze-changes.outputs.cloudflare_any_changed == 'true' && needs.analyze-changes.outputs.go_helper_any_changed != 'true' }}
         run: |
           go test -v ./test -run TestCloudflareTunnel
+
       - name: Http Echo Server
-        if: steps.changed-argo-apps.outputs.http_echo_server == 'true'
+        if: ${{ needs.analyze-changes.outputs.http_echo_server == 'true' && needs.analyze-changes.outputs.go_helper_any_changed != 'true' }}
         run: |
           go test -v ./test -run TestHttpEchoServer
+
       - name: Golang Tests
-        if: steps.changed-argo-apps.outputs.go_test_any_changed == 'true'
+        if: ${{ needs.analyze-changes.outputs.go_test_any_changed == 'true' && needs.analyze-changes.outputs.go_helper_any_changed != 'true' }}
         env:
-          GO_TEST_CHANGED_FILES: ${{ steps.changed-argo-apps.outputs.go_test_all_changed_files }}
+          GO_TEST_CHANGED_FILES: ${{ needs.analyze-changes.outputs.go_test_all_changed_files }}
         run: |
           for test in ${GO_TEST_CHANGED_FILES}; do
           echo "${test} was changed"
             go test -v ./test -run $(basename ${test} _test.go | sed 's/.*/Test\u&/' | sed -E 's/_([a-z])/\U\1/g')
           done
+
       - name: Golang Test Helper
-        if: ${{ steps.changed-argo-apps.outputs.go_helper_any_changed == 'true' || steps.changed-argo-apps.outputs.go_dependencies_any_changed == 'true' }}
+        if: ${{ needs.analyze-changes.outputs.go_helper_any_changed == 'true' }}
         run: |
           go test -v ./test
+
       - name: Upload KinD logs
         if: always()
         uses: actions/upload-artifact@v4.4.3
@@ -114,6 +141,8 @@ jobs:
           retention-days: 3
 
   create-argocd-diff:
+    needs: analyze-changes
+    if: ${{ needs.analyze-changes.outputs.apps_any_changed == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -124,20 +153,12 @@ jobs:
         with:
           path: pull-request
 
-      - uses: tj-actions/changed-files@v45.0.4
-        id: changed-argo-apps
-        with:
-          files_yaml: |
-            apps:
-              - kubernetes-services/**
-
       - uses: actions/checkout@v4
         with:
           ref: main
           path: main
 
       - name: Generate Diff
-        if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
         run: |
           docker run \
             --network=host \
@@ -150,7 +171,6 @@ jobs:
             dagandersen/argocd-diff-preview:v0.0.25
 
       - name: Post diff as comment
-        if: steps.changed-argo-apps.outputs.apps_any_changed == 'true'
         run: |
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md --edit-last || \
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md
