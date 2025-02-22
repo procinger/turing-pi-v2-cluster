@@ -13,7 +13,8 @@
     "argocd",
     "gomod",
     "custom.regex",
-    "kustomize"
+    "kustomize",
+    "github-actions"
   ],
   "postUpdateOptions": [
     "gomodTidy"
@@ -69,6 +70,16 @@
       "automerge": true,
       "labels": [
         "custom regex"
+      ]
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "enabled": true,
+      "automerge": true,
+      "labels": [
+        "github actions"
       ]
     },
     {
