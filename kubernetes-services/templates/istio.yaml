@@ -42,7 +42,7 @@ spec:
       targetRevision: 1.24.3
     - repoURL: https://kiali.org/helm-charts
       chart: kiali-server
-      targetRevision: 2.5.0
+      targetRevision: 2.6.0
       helm:
         values: |
           clustering:
