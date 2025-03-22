@@ -16,6 +16,27 @@ spec:
       targetRevision: 70.2.0
       helm:
         values: |
+          prometheusOperator:
+            admissionWebhooks:
+              enabled: true
+
+              annotations:
+                argocd.argoproj.io/hook: PreSync
+                argocd.argoproj.io/hook-delete-policy: HookSucceeded
+
+              patch:
+                annotations:
+                  argocd.argoproj.io/hook: PreSync
+                  argocd.argoproj.io/hook-delete-policy: HookSucceeded
+
+              mutatingWebhookConfiguration:
+                annotations:
+                  argocd.argoproj.io/hook: PreSync
+
+              validatingWebhookConfiguration:
+                annotations:
+                  argocd.argoproj.io/hook: PreSync
+
           prometheus:
             prometheusSpec:
               storageSpec:
@@ -76,6 +97,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - PruneLast=true
     retry:
       limit: 3
       backoff:
