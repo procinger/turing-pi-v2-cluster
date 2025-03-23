@@ -16,7 +16,7 @@ spec:
         app: http-echo-server
     spec:
       containers:
-        - image: mendhak/http-https-echo:35
+        - image: mendhak/http-https-echo:36
           name: http-echo-server
           ports:
             - containerPort: 8443
