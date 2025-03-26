@@ -26,9 +26,12 @@ spec:
             replicas: "1"
           applicationSet:
             replicaCount: "1"
+          commitServer:
+            enabled: true
           configs:
             params:
               "server.insecure": "true"
+              "hydrator.enabled": "true"
             cm:
               "exec.enabled": "true"
               "timeout.reconciliation": "30s"
