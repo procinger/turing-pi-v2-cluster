@@ -33,7 +33,7 @@ jobs:
       go_test_all_changed_files: ${{ steps.changed-files.outputs.go_test_all_changed_files }}
       go_helper_any_changed: ${{ steps.changed-files.outputs.go_helper_any_changed }}
     steps:
-      - uses: tj-actions/changed-files@v46.0.3
+      - uses: tj-actions/changed-files@v46.0.4
         id: changed-files
         with:
           files_yaml: |
