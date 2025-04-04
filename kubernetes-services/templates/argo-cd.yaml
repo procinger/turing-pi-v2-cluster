@@ -13,7 +13,7 @@ spec:
   sources:
     - chart: argo-cd
       repoURL:  https://argoproj.github.io/argo-helm
-      targetRevision: 7.8.22
+      targetRevision: 7.8.23
       helm:
         values: |
           redis-ha:
