@@ -34,7 +34,7 @@ spec:
               "hydrator.enabled": "true"
             cm:
               "exec.enabled": "true"
-              "timeout.reconciliation": "30s"
+              "timeout.reconciliation": "60s"
           dex:
             enabled: false
   syncPolicy:

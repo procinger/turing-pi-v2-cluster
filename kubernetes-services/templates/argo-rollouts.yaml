@@ -14,6 +14,10 @@ spec:
     chart: argo-rollouts
     repoURL: https://argoproj.github.io/argo-helm
     targetRevision: 2.39.5
+    helm:
+      values: |
+        dashboard:
+          enabled: true
   syncPolicy:
     automated:
       prune: true
