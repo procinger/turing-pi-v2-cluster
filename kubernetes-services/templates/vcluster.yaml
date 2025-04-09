@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vcluster
+  namespace: argo-cd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vcluster
+  project: kubernetes
+  source:
+    chart: vcluster
+    repoURL: https://charts.loft.sh
+    targetRevision: 0.22.4
+    helm:
+      values: |
+        controlPlane:
+          ingress:
+            enabled: true
+            host: vcluster-k8s-api.example.net
+        sync:
+          toHost:
+            serviceAccounts:
+              enabled: true
+          fromHost:
+            nodes:
+              enabled: true
+              clearImageStatus: true
+        exportKubeConfig:
+          context: vcluster-test
+          server: vcluster-k8s-api.example.net
+          secret:
+            name: vcluster-kubeconfig
+            namespace: vcluster
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
