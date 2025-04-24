@@ -19,7 +19,7 @@ spec:
           platform: ""
     - path: ./config/crd/standard
       repoURL: https://github.com/kubernetes-sigs/gateway-api.git
-      targetRevision: v1.2.1
+      targetRevision: v1.3.0
     - path: ./kubernetes-services/additions/istio-gateway
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: main
