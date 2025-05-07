@@ -34,7 +34,9 @@ spec:
               "hydrator.enabled": "true"
             cm:
               "exec.enabled": "true"
-              "timeout.reconciliation": "60s"
+              "timeout.reconciliation": "120s"
+              "resource.compareoptions": |
+                ignoreResourceStatusField: crd
           dex:
             enabled: false
   syncPolicy:
