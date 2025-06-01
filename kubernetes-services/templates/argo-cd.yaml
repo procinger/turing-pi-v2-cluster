@@ -35,8 +35,9 @@ spec:
             cm:
               "exec.enabled": "true"
               "timeout.reconciliation": "120s"
-              "resource.compareoptions": |
-                ignoreResourceStatusField: crd
+              "resource.customizations.ignoreDifferences.apiextensions.k8s.io_CustomResourceDefinition": |
+                jsonPointers:
+                - /spec/preserveUnknownFields
           dex:
             enabled: false
   syncPolicy:
