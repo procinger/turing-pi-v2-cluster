@@ -71,6 +71,17 @@ spec:
               storageClassName: longhorn
               accessModes: ["ReadWriteOnce"]
               size: 1Gi
+            securityContext:
+              runAsNonRoot: false
+              runAsUser: 0
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                add:
+                  - CHOWN
+                  - DAC_READ_SEARCH
+                drop:
+                  - ALL
     - path: ./kubernetes-services/additions/prometheus
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: main
