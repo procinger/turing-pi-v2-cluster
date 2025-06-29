@@ -2,12 +2,12 @@ name: K8S E2E Tests
 on:
   merge_group:
   pull_request:
-    paths:
-      - kubernetes-services/**
-      - test/**
-      - go.mod
-      - renovate.json
-      - .github/**
+  #  paths:
+  #    - kubernetes-services/**
+  #    - test/**
+  #    - go.mod
+  #    - renovate.json
+  #    - .github/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
