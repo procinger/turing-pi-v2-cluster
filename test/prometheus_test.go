@@ -51,9 +51,43 @@ func TestPrometheus(t *testing.T) {
 		)
 
 		promCurrent.Spec.Sources[i].Helm.Values = source.Helm.Values
-		if promUpdate.Spec.Sources != nil {
-			promUpdate.Spec.Sources[i].Helm.Values = source.Helm.Values
+	}
+
+	for i, source := range promUpdate.Spec.Sources {
+		if source.Chart == "" {
+			continue
 		}
+		// replace storageClass; we do not have longhorn in ci
+		source.Helm.Values = strings.Replace(
+			source.Helm.Values,
+			"longhorn",
+			"standard",
+			-1,
+		)
+
+		// also shrink volume
+		source.Helm.Values = strings.Replace(
+			source.Helm.Values,
+			"storage: 20Gi",
+			"storage: 500Mi",
+			-1,
+		)
+
+		source.Helm.Values = strings.Replace(
+			source.Helm.Values,
+			"storage: 5Gi",
+			"storage: 500Mi",
+			-1,
+		)
+
+		source.Helm.Values = strings.Replace(
+			source.Helm.Values,
+			"size: 1Gi",
+			"size: 100Mi",
+			-1,
+		)
+
+		promUpdate.Spec.Sources[i].Helm.Values = source.Helm.Values
 	}
 
 	client, err := test.GetClient()
