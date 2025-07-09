@@ -2,7 +2,7 @@ module test
 
 go 1.24.0
 
-toolchain go1.24.4
+toolchain go1.24.5
 
 require (
 	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.2.0
