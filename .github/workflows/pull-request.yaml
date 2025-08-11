@@ -64,7 +64,7 @@ jobs:
     needs: analyze-changes
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: yokawasa/action-setup-kube-tools@v0.11.2
         with:
           kubectl: '1.29.0'
@@ -149,11 +149,11 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: pull-request
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
           path: main
