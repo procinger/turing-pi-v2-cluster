@@ -13,7 +13,7 @@ spec:
   sources:
     - chart: kube-prometheus-stack
       repoURL: https://prometheus-community.github.io/helm-charts
-      targetRevision: 76.4.1
+      targetRevision: 76.5.1
       helm:
         values: |
           prometheusOperator:
