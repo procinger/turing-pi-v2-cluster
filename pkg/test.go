@@ -3,6 +3,7 @@ package e2eutils
 import (
 	"context"
 	"e2eutils/pkg/argo"
+	"e2eutils/pkg/helm"
 	"errors"
 	"log/slog"
 	"reflect"
@@ -72,30 +73,8 @@ func PrepareArgoApp(gitRepository string, applicationYaml string) (argo.Applicat
 	return current, update, objects, nil
 }
 
-func deployHelmChart(applicationSource argo.ApplicationSource, namespace string, kubeConfigFile string) error {
-	helmMgr := GetHelmManager(kubeConfigFile)
-
-	if !strings.Contains(applicationSource.RepoURL, "oci://") {
-		err := AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
-		if err != nil {
-			return err
-		}
-	}
-
-	err := DeployHelmChart(helmMgr, applicationSource, namespace)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) error {
-	if argoApplication.Spec.Source != nil {
-		if argoApplication.Spec.Source.Chart == "" {
-			return nil
-		}
-
+	if argoApplication.Spec.Source != nil && argoApplication.Spec.Source.Chart != "" {
 		err := deployHelmChart(*argoApplication.Spec.Source, argoApplication.Spec.Destination.Namespace, kubeConfigFile)
 		if err != nil {
 			return errors.New(err.Error())
@@ -114,6 +93,24 @@ func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) e
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func deployHelmChart(applicationSource argo.ApplicationSource, namespace string, kubeConfigFile string) error {
+	helmMgr := helm.NewHelmManager(kubeConfigFile)
+
+	if !strings.HasPrefix(applicationSource.RepoURL, "oci://") {
+		err := helm.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := helm.DeployHelmChart(helmMgr, applicationSource, namespace)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -183,7 +180,7 @@ func DaemonSetBecameReady(ctx context.Context, client klient.Client, namespace s
 		return err
 	}
 
-	daemonSetList, err := clientSet.AppsV1().DaemonSets(namespace).List(context.TODO(), metav1.ListOptions{})
+	daemonSetList, err := clientSet.AppsV1().DaemonSets(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

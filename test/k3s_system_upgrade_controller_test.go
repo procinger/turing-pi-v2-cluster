@@ -48,7 +48,6 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 						continue
 					}
 
-					namespace = object.GetName()
 					err = e2eutils.Apply(*clientSet, &object)
 					require.NoError(t, err)
 

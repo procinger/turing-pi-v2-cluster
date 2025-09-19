@@ -16,15 +16,13 @@ func GetKubernetesManifests(argoApplication argo.Application) ([]k8s.Object, err
 	var objects []k8s.Object
 	var err error
 
-	if argoApplication.Spec.Source != nil {
-		if argoApplication.Spec.Source.Path == "" {
-			return nil, nil
-		}
-
+	if argoApplication.Spec.Source != nil && argoApplication.Spec.Source.Path != "" {
 		objects, err = prepareKubernetesManifests(*argoApplication.Spec.Source)
 		if err != nil {
 			return nil, err
 		}
+
+		return objects, nil
 	}
 
 	var source argo.ApplicationSource
