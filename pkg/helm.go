@@ -1,11 +1,12 @@
-package helm
+package e2eutils
 
 import (
+	"e2eutils/pkg/argo"
 	"fmt"
 	"os"
-	"sigs.k8s.io/e2e-framework/third_party/helm"
 	"strings"
-	"test/test/pkg/argo"
+
+	"sigs.k8s.io/e2e-framework/third_party/helm"
 )
 
 type HelmOptions struct {
@@ -34,7 +35,7 @@ func AddHelmRepository(helmMgr *helm.Manager, helmRepoUrl string, helmChartName 
 	return nil
 }
 
-func helmifyApp(app argo.ApplicationSource, namespace string) (HelmOptions, error) {
+func helmifyArgoApp(app argo.ApplicationSource, namespace string) (HelmOptions, error) {
 	fullChartName := getFullChartName(app.Chart, app.Chart)
 	helmOciRepository := ""
 
@@ -90,7 +91,7 @@ func helmValuesToFile(applicationSource argo.ApplicationSource) error {
 }
 
 func DeployHelmChart(helmMgr *helm.Manager, applicationSource argo.ApplicationSource, namespace string) error {
-	helmOptions, err := helmifyApp(applicationSource, namespace)
+	helmOptions, err := helmifyArgoApp(applicationSource, namespace)
 	if err != nil {
 		return err
 	}

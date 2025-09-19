@@ -1,8 +1,9 @@
-package api
+package e2eutils
 
 import (
 	"context"
 	"errors"
+
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,7 +13,6 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
-	"test/test/pkg/test"
 )
 
 func Apply(clientset kubernetes.Clientset, object runtime.Object) error {
@@ -33,7 +33,7 @@ func Apply(clientset kubernetes.Clientset, object runtime.Object) error {
 		_, err := createPersistentVolumeClaim(clientset, *object.(*corev1.PersistentVolumeClaim))
 		return err
 	case *unstructured.Unstructured:
-		dynClient, err := test.GetDynClient()
+		dynClient, err := GetDynClient()
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func createPersistentVolumeClaim(clientset kubernetes.Clientset, object corev1.P
 }
 
 func getResourceName(object unstructured.Unstructured) (string, error) {
-	discoveryClient, err := test.GetDiscoveryClient()
+	discoveryClient, err := GetDiscoveryClient()
 	if err != nil {
 		return "", errors.New("Failed to get discovery client " + err.Error())
 	}

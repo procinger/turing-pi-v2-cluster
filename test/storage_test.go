@@ -1,15 +1,15 @@
-package test
+package e2eutils
 
 import (
 	"context"
+	"e2eutils/pkg"
+	"strings"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
-	"strings"
-	"test/test/pkg/api"
-	"test/test/pkg/test"
-	"testing"
 )
 
 func TestStorage(t *testing.T) {
@@ -28,22 +28,19 @@ spec:
   storageClassName: longhorn
 `
 
-	scCurrent, scUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/snapshot-controller.yaml")
+	scCurrent, scUpdate, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/snapshot-controller.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare shanpshot controller test #%v", err)
 	}
 
-	longhornCurrent, longhornUpdate, manifest, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/longhorn.yaml")
+	longhornCurrent, longhornUpdate, manifest, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/longhorn.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare longhorn csi #%v", err)
 	}
 
-	client, err := test.GetClient()
-	if err != nil {
-		t.Fatalf("Failed to get kubernetes client #%v", err)
-	}
+	client := e2eutils.GetClient()
 
-	clientSet, err := test.GetClientSet()
+	clientSet, err := e2eutils.GetClientSet()
 	if err != nil {
 		t.Fatalf("Failed to get kubernetes clientSet #%v", err)
 	}
@@ -80,38 +77,38 @@ csi:
 		}).
 		Assess("Deploying CSI Helm Charts",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeployHelmCharts(cfg.KubeconfigFile(), scCurrent)
+				err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), scCurrent)
 				require.NoError(t, err)
 
-				err = test.DeployHelmCharts(cfg.KubeconfigFile(), longhornCurrent)
+				err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), longhornCurrent)
 				require.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Longhorn DaemonSet became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DaemonSetBecameReady(ctx, client, longhornCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DaemonSetBecameReady(ctx, client, longhornCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, longhornCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, longhornCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Snapshot Controller Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, scCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, scCurrent.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Deploy Snapshot Class",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = api.ApplyAll(*clientSet, manifest)
+				err = e2eutils.ApplyAll(*clientSet, manifest)
 				require.NoError(t, err)
 
 				return ctx
@@ -119,10 +116,10 @@ csi:
 		Assess("Deploy PVC",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 				pvcObject, err := decoder.DecodeAll(ctx, strings.NewReader(pvc))
-				err = api.ApplyAll(*clientSet, pvcObject)
+				err = e2eutils.ApplyAll(*clientSet, pvcObject)
 				require.NoError(t, err)
 
-				err = test.PersistentVolumeClaimIsBound(ctx, client, "default")
+				err = e2eutils.PersistentVolumeClaimIsBound(ctx, client, "default")
 				require.NoError(t, err)
 
 				return ctx
@@ -136,7 +133,7 @@ csi:
 			}
 
 			if scUpdate.Spec.Sources != nil {
-				err = test.DeployHelmCharts(cfg.KubeconfigFile(), scUpdate)
+				err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), scUpdate)
 				require.NoError(t, err)
 			}
 
@@ -165,7 +162,7 @@ csi:
 					-1,
 				)
 
-				err = test.DeployHelmCharts(cfg.KubeconfigFile(), longhornUpdate)
+				err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), longhornUpdate)
 				require.NoError(t, err)
 			}
 			return ctx
@@ -176,7 +173,7 @@ csi:
 					t.SkipNow()
 				}
 
-				err = test.DaemonSetBecameReady(ctx, client, longhornUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DaemonSetBecameReady(ctx, client, longhornUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -187,7 +184,7 @@ csi:
 					t.SkipNow()
 				}
 
-				err = test.DeploymentBecameReady(ctx, client, longhornUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, longhornUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -198,7 +195,7 @@ csi:
 					t.SkipNow()
 				}
 
-				err = test.DeploymentBecameReady(ctx, client, scUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, scUpdate.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

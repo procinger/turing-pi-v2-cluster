@@ -1,18 +1,18 @@
-package test
+package e2eutils
 
 import (
 	"context"
+	"e2eutils/pkg"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
-	"strings"
-	"test/test/pkg/api"
-	"test/test/pkg/test"
-	"testing"
 )
 
 func TestHttpEchoServer(t *testing.T) {
@@ -22,15 +22,9 @@ kind: Namespace
 metadata:
   name: http-echo-server
 `
-	client, err := test.GetClient()
-	if err != nil {
-		t.Fatalf("Failed to get kubernetes client #%v", err)
-	}
-
-	clientSet, err := test.GetClientSet()
-	if err != nil {
-		t.Fatalf("Failed to get kubernetes clientSet #%v", err)
-	}
+	client := e2eutils.GetClient()
+	clientSet, err := e2eutils.GetClientSet()
+	require.NoError(t, err)
 
 	var objectList []k8s.Object
 	install := features.
@@ -55,14 +49,14 @@ metadata:
 					t.Fatalf("No objects to deploy %v", objectList)
 				}
 
-				err = api.ApplyAll(*clientSet, objectList)
+				err = e2eutils.ApplyAll(*clientSet, objectList)
 				require.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, "http-echo-server")
+				err := e2eutils.DeploymentBecameReady(ctx, client, "http-echo-server")
 				assert.NoError(t, err)
 
 				return ctx

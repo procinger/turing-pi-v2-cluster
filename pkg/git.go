@@ -1,4 +1,4 @@
-package git
+package e2eutils
 
 import (
 	"os/exec"

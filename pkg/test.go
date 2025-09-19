@@ -1,8 +1,14 @@
-package test
+package e2eutils
 
 import (
 	"context"
+	"e2eutils/pkg/argo"
 	"errors"
+	"log/slog"
+	"reflect"
+	"strings"
+	"time"
+
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -10,27 +16,16 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"log/slog"
-	"reflect"
 	"sigs.k8s.io/e2e-framework/klient"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
-	"sigs.k8s.io/e2e-framework/pkg/envconf"
-	"strings"
-	"test/test/pkg/argo"
-	"test/test/pkg/git"
-	"test/test/pkg/helm"
-	"test/test/pkg/manifest"
-	"time"
 )
 
-func PrepareTest(gitRepository string, applicationYaml string) (argo.Application, argo.Application, []k8s.Object, error) {
-	currGitBranch, err := git.GetCurrentGitBranch()
+func PrepareArgoApp(gitRepository string, applicationYaml string) (argo.Application, argo.Application, []k8s.Object, error) {
+	currGitBranch, err := GetCurrentGitBranch()
 	if err != nil {
 		return argo.Application{}, argo.Application{}, nil, err
 	}
@@ -41,7 +36,7 @@ func PrepareTest(gitRepository string, applicationYaml string) (argo.Application
 			return argo.Application{}, argo.Application{}, nil, err
 		}
 
-		objects, err := manifest.GetKubernetesManifests(current)
+		objects, err := GetKubernetesManifests(current)
 		if err != nil {
 			return current, argo.Application{}, nil, err
 		}
@@ -54,7 +49,7 @@ func PrepareTest(gitRepository string, applicationYaml string) (argo.Application
 		return argo.Application{}, argo.Application{}, nil, err
 	}
 
-	objects, err := manifest.GetKubernetesManifests(update)
+	objects, err := GetKubernetesManifests(update)
 	if err != nil {
 		return argo.Application{}, argo.Application{}, nil, err
 	}
@@ -78,16 +73,16 @@ func PrepareTest(gitRepository string, applicationYaml string) (argo.Application
 }
 
 func deployHelmChart(applicationSource argo.ApplicationSource, namespace string, kubeConfigFile string) error {
-	helmMgr := helm.GetHelmManager(kubeConfigFile)
+	helmMgr := GetHelmManager(kubeConfigFile)
 
 	if !strings.Contains(applicationSource.RepoURL, "oci://") {
-		err := helm.AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
+		err := AddHelmRepository(helmMgr, applicationSource.RepoURL, applicationSource.Chart)
 		if err != nil {
 			return err
 		}
 	}
 
-	err := helm.DeployHelmChart(helmMgr, applicationSource, namespace)
+	err := DeployHelmChart(helmMgr, applicationSource, namespace)
 	if err != nil {
 		return err
 	}
@@ -122,36 +117,6 @@ func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) e
 	}
 
 	return nil
-}
-
-func GetClient() (klient.Client, error) {
-	cfg := envconf.Config{}
-	return cfg.Client(), nil
-}
-
-func GetRestConfig() *rest.Config {
-	client, _ := GetClient()
-	return client.RESTConfig()
-}
-
-func GetClientSet() (*kubernetes.Clientset, error) {
-	kubeConfig := GetRestConfig()
-	clientSet, err := kubernetes.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return clientSet, nil
-}
-
-func GetDynClient() (*dynamic.DynamicClient, error) {
-	kubeConfig := GetRestConfig()
-	return dynamic.NewForConfig(kubeConfig)
-}
-
-func GetDiscoveryClient() (*discovery.DiscoveryClient, error) {
-	kubeConfig := GetRestConfig()
-	return discovery.NewDiscoveryClientForConfig(kubeConfig)
 }
 
 func CheckJobsCompleted(ctx context.Context, client klient.Client, namespace string) error {

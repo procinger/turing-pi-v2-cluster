@@ -1,14 +1,15 @@
-package manifest
+package e2eutils
 
 import (
 	"context"
+	"e2eutils/pkg/argo"
 	"os"
+	"strings"
+
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/kyaml/filesys"
-	"strings"
-	"test/test/pkg/argo"
 )
 
 func GetKubernetesManifests(argoApplication argo.Application) ([]k8s.Object, error) {

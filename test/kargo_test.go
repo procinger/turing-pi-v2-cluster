@@ -1,30 +1,28 @@
-package test
+package e2eutils
 
 import (
 	"context"
+	"e2eutils/pkg"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
-	"test/test/pkg/test"
-	"testing"
 )
 
 func TestKargo(t *testing.T) {
-	kargoCurrent, kargoUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/kargo.yaml")
+	kargoCurrent, kargoUpdate, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/kargo.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare kargo test #%v", err)
 	}
 
-	certCurrent, _, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/cert-manager.yaml")
+	certCurrent, _, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/cert-manager.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare cert-manager #%v", err)
 	}
 
-	client, err := test.GetClient()
-	if err != nil {
-		t.Fatalf("Failed to get kubernetes client #%v", err)
-	}
+	client := e2eutils.GetClient()
 
 	install := features.
 		New("Deploying Kargo.io Helm Chart").
@@ -34,17 +32,17 @@ func TestKargo(t *testing.T) {
 			}
 
 			// kargo depends on cert-manager crds
-			err = test.DeployHelmCharts(cfg.KubeconfigFile(), certCurrent)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), certCurrent)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(cfg.KubeconfigFile(), kargoCurrent)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), kargoCurrent)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, kargoCurrent.Spec.Destination.Namespace)
+				err := e2eutils.DeploymentBecameReady(ctx, client, kargoCurrent.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
@@ -61,14 +59,14 @@ func TestKargo(t *testing.T) {
 				kargoUpdate.Spec.Sources[index].RepoURL = "oci://" + kargoUpdate.Spec.Sources[index].RepoURL + "/" + kargoUpdate.Spec.Sources[index].Chart
 			}
 
-			err := test.DeployHelmCharts(cfg.KubeconfigFile(), kargoUpdate)
+			err := e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), kargoUpdate)
 			assert.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := test.DeploymentBecameReady(ctx, client, kargoUpdate.Spec.Destination.Namespace)
+				err := e2eutils.DeploymentBecameReady(ctx, client, kargoUpdate.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx

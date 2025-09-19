@@ -5,9 +5,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"sigs.k8s.io/yaml"
 	"strconv"
 	"strings"
+
+	"sigs.k8s.io/yaml"
 )
 
 func GetArgoApplication(applicationYaml string) (Application, error) {
