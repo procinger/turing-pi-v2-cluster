@@ -11,15 +11,6 @@ import (
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 )
 
-type HelmArguments struct {
-	Name           string
-	Namespace      string
-	Chart          string
-	Version        string
-	ValuesFilePath string
-	OciRepository  string
-}
-
 func NewHelmManager(kubeConfigFile string) *helm.Manager {
 	return helm.New(kubeConfigFile)
 }
@@ -29,43 +20,33 @@ func AddHelmRepository(helmMgr *helm.Manager, repoURL, chartName string) error {
 }
 
 func DeployHelmChart(helmMgr *helm.Manager, src argo.ApplicationSource, namespace string) error {
-	opts, err := buildHelmArguments(src, namespace)
+	opts, err := buildHelmOptions(src, namespace)
 	if err != nil {
 		return fmt.Errorf("building helm options: %w", err)
 	}
 
-	options := []helm.Option{
-		helm.WithName(opts.Name),
-		helm.WithNamespace(opts.Namespace),
-		helm.WithChart(opts.Chart),
-		helm.WithVersion(opts.Version),
-		helm.WithArgs("--install", "--create-namespace"),
-	}
-
-	if opts.ValuesFilePath != "" {
-		options = append(options, helm.WithArgs("-f", opts.ValuesFilePath))
-	}
-
-	if err := helmMgr.RunUpgrade(options...); err != nil {
+	if err := helmMgr.RunUpgrade(opts...); err != nil {
 		return fmt.Errorf("helm upgrade/install failed: %w", err)
 	}
 
 	return nil
 }
 
-func buildHelmArguments(src argo.ApplicationSource, namespace string) (*HelmArguments, error) {
-	opts := &HelmArguments{
-		Name:      src.Chart,
-		Namespace: namespace,
-		Version:   src.TargetRevision,
-	}
-
+func buildHelmOptions(src argo.ApplicationSource, namespace string) ([]helm.Option, error) {
+	chart := ""
 	if strings.HasPrefix(src.RepoURL, "oci://") {
 		base := strings.TrimSuffix(src.RepoURL, "/")
-		opts.Chart = fmt.Sprintf("%s/%s", base, src.Chart)
-		opts.OciRepository = ""
+		chart = fmt.Sprintf("%s/%s", base, src.Chart)
 	} else {
-		opts.Chart = fmt.Sprintf("%s/%s", src.Chart, src.Chart)
+		chart = fmt.Sprintf("%s/%s", src.Chart, src.Chart)
+	}
+
+	options := []helm.Option{
+		helm.WithName(src.Chart),
+		helm.WithNamespace(namespace),
+		helm.WithChart(chart),
+		helm.WithVersion(src.TargetRevision),
+		helm.WithArgs("--install", "--create-namespace"),
 	}
 
 	if src.Helm != nil && src.Helm.Values != "" {
@@ -73,10 +54,11 @@ func buildHelmArguments(src argo.ApplicationSource, namespace string) (*HelmArgu
 		if err != nil {
 			return nil, fmt.Errorf("writing values file: %w", err)
 		}
-		opts.ValuesFilePath = valuesFilePath
+
+		options = append(options, helm.WithArgs("-f", valuesFilePath))
 	}
 
-	return opts, nil
+	return options, nil
 }
 
 func writeValuesFile(chart, revision, valuesContent string) (string, error) {
