@@ -1,51 +1,49 @@
-package test
+package e2eutils
 
 import (
 	"context"
+	"e2eutils/pkg"
+	"log"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-	"log"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
-	"test/test/pkg/test"
-	"testing"
 )
 
 func TestIstio(t *testing.T) {
-	istioCurrent, istioUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/istio.yaml")
+	istioTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio.yaml")
+	if err != nil {
+		t.Fatalf("Failed to prepare test: %v", err)
+	}
+
+	gatewayTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio-gateway.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
-	gatewayCurrent, gatewayUpdate, _, err := test.PrepareTest(gitRepository, "../kubernetes-services/templates/istio-gateway.yaml")
-	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
-	}
-
-	client, err := test.GetClient()
-	if err != nil {
-		t.Fatalf("Failed to get kubernetes client #%v", err)
-	}
+	client := e2eutils.GetClient()
 
 	install := features.
 		New("Deploying Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = test.DeployHelmCharts(cfg.KubeconfigFile(), istioCurrent)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), istioTest.Current.Argo)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(cfg.KubeconfigFile(), gatewayCurrent)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), gatewayTest.Current.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, istioCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, istioTest.Current.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = test.DeploymentBecameReady(ctx, client, gatewayCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, gatewayTest.Current.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -95,24 +93,24 @@ func TestIstio(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if istioUpdate.Spec.Sources == nil && gatewayUpdate.Spec.Sources == nil {
+			if istioTest.Update.Argo.Spec.Sources == nil && gatewayTest.Update.Argo.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
-			err = test.DeployHelmCharts(cfg.KubeconfigFile(), istioUpdate)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), istioTest.Update.Argo)
 			require.NoError(t, err)
 
-			err = test.DeployHelmCharts(cfg.KubeconfigFile(), gatewayUpdate)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), gatewayTest.Update.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = test.DeploymentBecameReady(ctx, client, istioUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, istioTest.Update.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = test.DeploymentBecameReady(ctx, client, gatewayUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, gatewayTest.Update.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
