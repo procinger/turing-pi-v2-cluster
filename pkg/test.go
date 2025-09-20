@@ -4,7 +4,6 @@ import (
 	"context"
 	"e2eutils/pkg/argo"
 	"e2eutils/pkg/helm"
-	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -24,59 +23,75 @@ import (
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 )
 
+type ArgoTest struct {
+	Current AppSettings
+	Update  AppSettings
+}
+
+type AppSettings struct {
+	Argo    argo.Application
+	Objects []k8s.Object
+}
+
 func PrepareArgoApp(ctx context.Context, gitRepository string, applicationYaml string) (
-	argo.Application,
-	argo.Application,
-	[]k8s.Object,
+	ArgoTest,
 	error,
 ) {
 	currGitBranch, err := GetCurrentGitBranch()
 	if err != nil {
-		return argo.Application{}, argo.Application{}, nil, err
+		return ArgoTest{}, err
 	}
 
-	var objects []k8s.Object
+	currentSettings, err := buildAppNode(ctx, applicationYaml)
+	if err != nil {
+		return ArgoTest{}, err
+	}
 
+	argoTest := ArgoTest{
+		Current: currentSettings,
+	}
+
+	// when we are working on the main branch, we don't need to fetch the Update state
 	if currGitBranch == "main" {
-		current, err := argo.GetArgoApplication(applicationYaml)
-		if err != nil {
-			return argo.Application{}, argo.Application{}, nil, err
-		}
-
-		currentPathCollection := argo.GatherArgoAppPaths(current)
-		if len(currentPathCollection) != 0 {
-			objects, err = GetKubernetesManifests(ctx, currentPathCollection)
-			if err != nil {
-				return current, argo.Application{}, nil, err
-			}
-		}
-
-		return current, argo.Application{}, objects, nil
+		return argoTest, nil
 	}
 
-	update, err := argo.GetArgoApplication(applicationYaml)
+	updateSettings, err := buildAppNode(ctx, applicationYaml)
 	if err != nil {
-		return argo.Application{}, argo.Application{}, nil, err
+		return ArgoTest{}, err
+	}
+	argoTest.Update = updateSettings
+
+	// if both nodes are equal, we don't need to test the update state
+	if reflect.DeepEqual(argoTest.Current, argoTest.Update) {
+		argoTest.Update = AppSettings{}
 	}
 
-	updatePathCollection := argo.GatherArgoAppPaths(update)
-	if len(updatePathCollection) != 0 {
-		objects, err = GetKubernetesManifests(ctx, updatePathCollection)
+	return argoTest, nil
+}
+
+func buildAppNode(ctx context.Context, applicationYaml string) (
+	AppSettings,
+	error,
+) {
+	app, err := argo.GetArgoApplication(applicationYaml)
+	if err != nil {
+		return AppSettings{}, err
+	}
+
+	pathCollection := argo.GatherArgoAppPaths(app)
+	var objects []k8s.Object
+	if len(pathCollection) != 0 {
+		objects, err = GetKubernetesManifests(ctx, pathCollection)
 		if err != nil {
-			return argo.Application{}, argo.Application{}, nil, err
+			return AppSettings{}, err
 		}
 	}
 
-	current, err := argo.GetArgoApplicationFromGit(gitRepository, applicationYaml)
-	if err != nil {
-		return update, argo.Application{}, objects, fmt.Errorf("failed to fetch current application %q from git: %w", applicationYaml, err)
-	}
-
-	if reflect.DeepEqual(current, update) {
-		return current, argo.Application{}, objects, nil
-	}
-
-	return current, update, objects, nil
+	return AppSettings{
+		Argo:    app,
+		Objects: objects,
+	}, nil
 }
 
 func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) error {

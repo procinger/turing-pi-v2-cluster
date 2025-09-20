@@ -12,7 +12,7 @@ import (
 )
 
 func TestArgoRollouts(t *testing.T) {
-	current, update, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/argo-rollouts.yaml")
+	rolloutTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/argo-rollouts.yaml")
 
 	if err != nil {
 		t.Fatalf("Failed to prepare test: %v", err)
@@ -23,14 +23,14 @@ func TestArgoRollouts(t *testing.T) {
 	install := features.
 		New("Deploying Argo Rollouts Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), current)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), rolloutTest.Current.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := e2eutils.DeploymentBecameReady(ctx, client, current.Spec.Destination.Namespace)
+				err := e2eutils.DeploymentBecameReady(ctx, client, rolloutTest.Current.Argo.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
@@ -40,18 +40,18 @@ func TestArgoRollouts(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Argo Rollouts Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if update.Spec.Source == nil {
+			if rolloutTest.Update.Argo.Spec.Source == nil {
 				t.SkipNow()
 			}
 
-			err := e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), update)
+			err := e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), rolloutTest.Update.Argo)
 			assert.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := e2eutils.DeploymentBecameReady(ctx, client, update.Spec.Destination.Namespace)
+				err := e2eutils.DeploymentBecameReady(ctx, client, rolloutTest.Update.Argo.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx

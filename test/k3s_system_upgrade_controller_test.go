@@ -13,7 +13,7 @@ import (
 )
 
 func TestK3sSystemUpgradeController(t *testing.T) {
-	current, update, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/k3s-system-upgrade-controller.yaml")
+	upgradeTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/k3s-system-upgrade-controller.yaml")
 	require.NoError(t, err)
 
 	clientSet, err := e2eutils.GetClientSet()
@@ -27,10 +27,10 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 	install := features.
 		New("Kustomization").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if update.Spec.Sources != nil {
-				kustomization, err = e2eutils.BuildKustomization("../" + update.Spec.Sources[0].Path)
+			if upgradeTest.Update.Argo.Spec.Sources != nil {
+				kustomization, err = e2eutils.BuildKustomization("../" + upgradeTest.Update.Argo.Spec.Sources[0].Path)
 			} else {
-				kustomization, err = e2eutils.BuildKustomization("../" + current.Spec.Sources[0].Path)
+				kustomization, err = e2eutils.BuildKustomization("../" + upgradeTest.Current.Argo.Spec.Sources[0].Path)
 			}
 			require.NoError(t, err)
 

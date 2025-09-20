@@ -24,24 +24,24 @@ metadata:
   name: %s
 
 `
-	current, _, additionalManifests, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/cloudflare-tunnel.yaml")
+	cloudflareTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/cloudflare-tunnel.yaml")
 	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
+		t.Fatalf("Failed to prepare test: %v", err)
 	}
 
 	client := e2eutils.GetClient()
 
 	clientSet, err := e2eutils.GetClientSet()
 	if err != nil {
-		t.Fatalf("Failed to get kubernetes clientSet #%v", err)
+		t.Fatalf("Failed to get kubernetes clientSet: %v", err)
 	}
 
 	var objectList []k8s.Object
 	install := features.
 		New("Preparing Cloudflare Tunnel Test").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			cloudflareTunnelDeployment := additionalManifests[0].(*v1.Deployment)
-			cloudflareTunnelDeployment.ObjectMeta.Namespace = current.Spec.Destination.Namespace
+			cloudflareTunnelDeployment := cloudflareTest.Current.Objects[0].(*v1.Deployment)
+			cloudflareTunnelDeployment.ObjectMeta.Namespace = cloudflareTest.Current.Argo.Spec.Destination.Namespace
 
 			// delete initContainers, we do not have the tunnel token in ci
 			cloudflareTunnelDeployment.Spec.Template.Spec.InitContainers = nil
@@ -54,10 +54,10 @@ metadata:
 
 			objectList, err = decoder.DecodeAll(ctx, strings.NewReader(initYaml))
 			if err != nil {
-				t.Fatalf("Failed to decode namespace #%v", err)
+				t.Fatalf("Failed to decode namespace: %v", err)
 			}
 
-			objectList = append(objectList, additionalManifests[0])
+			objectList = append(objectList, cloudflareTest.Current.Objects[0])
 
 			return ctx
 		}).
@@ -74,7 +74,7 @@ metadata:
 			}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := e2eutils.DeploymentBecameReady(ctx, client, current.Spec.Destination.Namespace)
+				err := e2eutils.DeploymentBecameReady(ctx, client, cloudflareTest.Current.Argo.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx

@@ -11,9 +11,9 @@ import (
 )
 
 func TestSealedSecrets(t *testing.T) {
-	sealedCurrent, sealedUpdate, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/sealed-secrets.yaml")
+	sealedTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/sealed-secrets.yaml")
 	if err != nil {
-		t.Fatalf("Failed to prepare sealed secret test #%v", err)
+		t.Fatalf("Failed to prepare sealed secret test: %v", err)
 	}
 
 	client := e2eutils.GetClient()
@@ -21,14 +21,14 @@ func TestSealedSecrets(t *testing.T) {
 	install := features.
 		New("Deploying Sealed Secrets Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), sealedCurrent)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), sealedTest.Current.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployment became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = e2eutils.DeploymentBecameReady(ctx, client, sealedCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, sealedTest.Current.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -37,18 +37,18 @@ func TestSealedSecrets(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Sealed Secrets Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if sealedUpdate.Spec.Source == nil {
+			if sealedTest.Update.Argo.Spec.Source == nil {
 				t.SkipNow()
 			}
 
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), sealedUpdate)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), sealedTest.Update.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Testing Sealed Secrets upgrade became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = e2eutils.DeploymentBecameReady(ctx, client, sealedUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, sealedTest.Update.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

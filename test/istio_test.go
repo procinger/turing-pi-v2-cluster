@@ -15,12 +15,12 @@ import (
 )
 
 func TestIstio(t *testing.T) {
-	istioCurrent, istioUpdate, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio.yaml")
+	istioTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio.yaml")
 	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
+		t.Fatalf("Failed to prepare test: %v", err)
 	}
 
-	gatewayCurrent, gatewayUpdate, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio-gateway.yaml")
+	gatewayTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio-gateway.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
@@ -30,20 +30,20 @@ func TestIstio(t *testing.T) {
 	install := features.
 		New("Deploying Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), istioCurrent)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), istioTest.Current.Argo)
 			require.NoError(t, err)
 
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), gatewayCurrent)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), gatewayTest.Current.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = e2eutils.DeploymentBecameReady(ctx, client, istioCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, istioTest.Current.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = e2eutils.DeploymentBecameReady(ctx, client, gatewayCurrent.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, gatewayTest.Current.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx
@@ -93,24 +93,24 @@ func TestIstio(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Istio Helm Charts Collection").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if istioUpdate.Spec.Sources == nil && gatewayUpdate.Spec.Sources == nil {
+			if istioTest.Update.Argo.Spec.Sources == nil && gatewayTest.Update.Argo.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), istioUpdate)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), istioTest.Update.Argo)
 			require.NoError(t, err)
 
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), gatewayUpdate)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), gatewayTest.Update.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err = e2eutils.DeploymentBecameReady(ctx, client, istioUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, istioTest.Update.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
-				err = e2eutils.DeploymentBecameReady(ctx, client, gatewayUpdate.Spec.Destination.Namespace)
+				err = e2eutils.DeploymentBecameReady(ctx, client, gatewayTest.Update.Argo.Spec.Destination.Namespace)
 				require.NoError(t, err)
 
 				return ctx

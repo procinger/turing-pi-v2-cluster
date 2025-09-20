@@ -12,10 +12,9 @@ import (
 )
 
 func TestArgoCd(t *testing.T) {
-	current, update, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/argo-cd.yaml")
-
+	argoTest, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/argo-cd.yaml")
 	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
+		t.Fatalf("Failed to prepare test: %v", err)
 	}
 
 	client := e2eutils.GetClient()
@@ -23,21 +22,21 @@ func TestArgoCd(t *testing.T) {
 	install := features.
 		New("Deploying Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), current)
+			err = e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), argoTest.Current.Argo)
 			require.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := e2eutils.DeploymentBecameReady(ctx, client, current.Spec.Destination.Namespace)
+				err := e2eutils.DeploymentBecameReady(ctx, client, argoTest.Current.Argo.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Jobs run successfully",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := e2eutils.CheckJobsCompleted(ctx, client, current.Spec.Destination.Namespace)
+				err := e2eutils.CheckJobsCompleted(ctx, client, argoTest.Current.Argo.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
@@ -47,25 +46,25 @@ func TestArgoCd(t *testing.T) {
 	upgrade := features.
 		New("Upgrading Argo CD Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			if update.Spec.Sources == nil {
+			if argoTest.Update.Argo.Spec.Sources == nil {
 				t.SkipNow()
 			}
 
-			err := e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), update)
+			err := e2eutils.DeployHelmCharts(cfg.KubeconfigFile(), argoTest.Update.Argo)
 			assert.NoError(t, err)
 
 			return ctx
 		}).
 		Assess("Deployments became ready",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := e2eutils.DeploymentBecameReady(ctx, client, update.Spec.Destination.Namespace)
+				err := e2eutils.DeploymentBecameReady(ctx, client, argoTest.Update.Argo.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
 			}).
 		Assess("Jobs run successfully",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				err := e2eutils.CheckJobsCompleted(ctx, client, update.Spec.Destination.Namespace)
+				err := e2eutils.CheckJobsCompleted(ctx, client, argoTest.Update.Argo.Spec.Destination.Namespace)
 				assert.NoError(t, err)
 
 				return ctx
