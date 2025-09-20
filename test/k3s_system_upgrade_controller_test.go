@@ -10,7 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
-	"sigs.k8s.io/yaml"
 )
 
 func TestK3sSystemUpgradeController(t *testing.T) {
@@ -22,16 +21,16 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 
 	client := e2eutils.GetClient()
 
-	var kustomization []string
+	var kustomization []*unstructured.Unstructured
 	var namespace string
 
 	install := features.
 		New("Kustomization").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			if update.Spec.Sources != nil {
-				kustomization, err = e2eutils.BuildKustomization(update.Spec.Sources[0].Path)
+				kustomization, err = e2eutils.BuildKustomization("../" + update.Spec.Sources[0].Path)
 			} else {
-				kustomization, err = e2eutils.BuildKustomization(current.Spec.Sources[0].Path)
+				kustomization, err = e2eutils.BuildKustomization("../" + current.Spec.Sources[0].Path)
 			}
 			require.NoError(t, err)
 
@@ -39,32 +38,25 @@ func TestK3sSystemUpgradeController(t *testing.T) {
 		}).
 		Assess("Deployment",
 			func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-				for _, resource := range kustomization {
-					var object unstructured.Unstructured
-					err = yaml.Unmarshal([]byte(resource), &object.Object)
-					require.NoError(t, err)
-
+				// deploy namespace
+				for _, object := range kustomization {
 					if object.GetKind() != "Namespace" {
 						continue
 					}
 
-					err = e2eutils.Apply(*clientSet, &object)
+					err = e2eutils.Apply(*clientSet, object)
 					require.NoError(t, err)
 
 					// give k8s api some time to create a resource
 					time.Sleep(100 * time.Millisecond)
 				}
 
-				for _, resource := range kustomization {
-					var object unstructured.Unstructured
-					err = yaml.Unmarshal([]byte(resource), &object.Object)
-					require.NoError(t, err)
-
+				for _, object := range kustomization {
 					if object.GetKind() == "Namespace" {
 						continue
 					}
 
-					err = e2eutils.Apply(*clientSet, &object)
+					err = e2eutils.Apply(*clientSet, object)
 					require.NoError(t, err)
 
 					// give k8s api some time to create a resource

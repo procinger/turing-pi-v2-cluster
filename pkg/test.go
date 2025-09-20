@@ -117,7 +117,7 @@ func deployHelmChart(applicationSource argo.ApplicationSource, namespace string,
 }
 
 func CheckJobsCompleted(ctx context.Context, client klient.Client, namespace string) error {
-	kubeConfig := client.RESTConfig()
+	kubeConfig := GetRestConfig()
 	clientSet, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
@@ -143,7 +143,7 @@ func CheckJobsCompleted(ctx context.Context, client klient.Client, namespace str
 }
 
 func DeploymentBecameReady(ctx context.Context, client klient.Client, namespace string) error {
-	kubeConfig := client.RESTConfig()
+	kubeConfig := GetRestConfig()
 	clientSet, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
@@ -174,7 +174,7 @@ func DeploymentBecameReady(ctx context.Context, client klient.Client, namespace 
 }
 
 func DaemonSetBecameReady(ctx context.Context, client klient.Client, namespace string) error {
-	kubeConfig := client.RESTConfig()
+	kubeConfig := GetRestConfig()
 	clientSet, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
@@ -205,7 +205,7 @@ func DaemonSetBecameReady(ctx context.Context, client klient.Client, namespace s
 }
 
 func PersistentVolumeClaimIsBound(ctx context.Context, client klient.Client, namespace string) error {
-	kubeConfig := client.RESTConfig()
+	kubeConfig := GetRestConfig()
 	clientSet, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
@@ -236,7 +236,7 @@ func PersistentVolumeClaimIsBound(ctx context.Context, client klient.Client, nam
 }
 
 func SnapshotIsReadyToUse(ctx context.Context, client klient.Client, namespace string) error {
-	kubeConfig := client.RESTConfig()
+	kubeConfig := GetRestConfig()
 	dynClient, err := dynamic.NewForConfig(kubeConfig)
 	if err != nil {
 		return err
