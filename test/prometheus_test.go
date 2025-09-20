@@ -12,7 +12,7 @@ import (
 )
 
 func TestPrometheus(t *testing.T) {
-	promCurrent, promUpdate, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/prometheus.yaml")
+	promCurrent, promUpdate, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/prometheus.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare prometheus test #%v", err)
 	}

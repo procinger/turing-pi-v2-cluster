@@ -12,10 +12,10 @@ import (
 )
 
 func TestArgoRollouts(t *testing.T) {
-	current, update, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/argo-rollouts.yaml")
+	current, update, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/argo-rollouts.yaml")
 
 	if err != nil {
-		t.Fatalf("Failed to prepare test #%v", err)
+		t.Fatalf("Failed to prepare test: %v", err)
 	}
 
 	client := e2eutils.GetClient()

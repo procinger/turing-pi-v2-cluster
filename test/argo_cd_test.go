@@ -12,7 +12,7 @@ import (
 )
 
 func TestArgoCd(t *testing.T) {
-	current, update, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/argo-cd.yaml")
+	current, update, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/argo-cd.yaml")
 
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)

@@ -4,8 +4,7 @@ import (
 	"context"
 	"e2eutils/pkg/argo"
 	"e2eutils/pkg/helm"
-	"errors"
-	"log/slog"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -25,11 +24,18 @@ import (
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 )
 
-func PrepareArgoApp(gitRepository string, applicationYaml string) (argo.Application, argo.Application, []k8s.Object, error) {
+func PrepareArgoApp(ctx context.Context, gitRepository string, applicationYaml string) (
+	argo.Application,
+	argo.Application,
+	[]k8s.Object,
+	error,
+) {
 	currGitBranch, err := GetCurrentGitBranch()
 	if err != nil {
 		return argo.Application{}, argo.Application{}, nil, err
 	}
+
+	var objects []k8s.Object
 
 	if currGitBranch == "main" {
 		current, err := argo.GetArgoApplication(applicationYaml)
@@ -37,9 +43,12 @@ func PrepareArgoApp(gitRepository string, applicationYaml string) (argo.Applicat
 			return argo.Application{}, argo.Application{}, nil, err
 		}
 
-		objects, err := GetKubernetesManifests(current)
-		if err != nil {
-			return current, argo.Application{}, nil, err
+		currentPathCollection := argo.GatherArgoAppPaths(current)
+		if len(currentPathCollection) != 0 {
+			objects, err = GetKubernetesManifests(ctx, currentPathCollection)
+			if err != nil {
+				return current, argo.Application{}, nil, err
+			}
 		}
 
 		return current, argo.Application{}, objects, nil
@@ -50,20 +59,17 @@ func PrepareArgoApp(gitRepository string, applicationYaml string) (argo.Applicat
 		return argo.Application{}, argo.Application{}, nil, err
 	}
 
-	objects, err := GetKubernetesManifests(update)
-	if err != nil {
-		return argo.Application{}, argo.Application{}, nil, err
+	updatePathCollection := argo.GatherArgoAppPaths(update)
+	if len(updatePathCollection) != 0 {
+		objects, err = GetKubernetesManifests(ctx, updatePathCollection)
+		if err != nil {
+			return argo.Application{}, argo.Application{}, nil, err
+		}
 	}
 
 	current, err := argo.GetArgoApplicationFromGit(gitRepository, applicationYaml)
 	if err != nil {
-		slog.Warn(
-			"Failed to get current application from git",
-			"application", applicationYaml,
-			"branch", currGitBranch,
-			"error", err.Error(),
-		)
-		return update, argo.Application{}, objects, nil
+		return update, argo.Application{}, objects, fmt.Errorf("failed to fetch current application %q from git: %w", applicationYaml, err)
 	}
 
 	if reflect.DeepEqual(current, update) {
@@ -77,7 +83,7 @@ func DeployHelmCharts(kubeConfigFile string, argoApplication argo.Application) e
 	if argoApplication.Spec.Source != nil && argoApplication.Spec.Source.Chart != "" {
 		err := deployHelmChart(*argoApplication.Spec.Source, argoApplication.Spec.Destination.Namespace, kubeConfigFile)
 		if err != nil {
-			return errors.New(err.Error())
+			return err
 		}
 
 		return nil

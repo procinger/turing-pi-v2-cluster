@@ -12,7 +12,7 @@ import (
 )
 
 func TestKured(t *testing.T) {
-	current, update, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/kured.yaml")
+	current, update, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/kured.yaml")
 	require.NoError(t, err)
 
 	client := e2eutils.GetClient()

@@ -11,7 +11,7 @@ import (
 )
 
 func TestCertManager(t *testing.T) {
-	current, update, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/cert-manager.yaml")
+	current, update, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/cert-manager.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}

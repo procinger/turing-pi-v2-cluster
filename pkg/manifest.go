@@ -2,47 +2,43 @@ package e2eutils
 
 import (
 	"context"
-	"e2eutils/pkg/argo"
+	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 	"sigs.k8s.io/e2e-framework/klient/k8s"
 )
 
-func GetKubernetesManifests(argoApplication argo.Application) ([]k8s.Object, error) {
-	var objects []k8s.Object
-	var err error
-
-	if argoApplication.Spec.Source != nil && argoApplication.Spec.Source.Path != "" {
-		objects, err = prepareKubernetesManifests(*argoApplication.Spec.Source)
-		if err != nil {
-			return nil, err
-		}
-
-		return objects, nil
+func GetKubernetesManifests(ctx context.Context, pathCollection []string) ([]k8s.Object, error) {
+	if pathCollection == nil {
+		return nil, errors.New("kustomization pathCollection must not be empty")
 	}
 
-	var source argo.ApplicationSource
-	for _, source = range argoApplication.Spec.Sources {
-		if source.Path == "" {
+	var objects []k8s.Object
+	for _, source := range pathCollection {
+		if source == "" {
 			continue
 		}
 
-		objects, err = prepareKubernetesManifests(source)
+		o, err := prepareKubernetesManifests(ctx, source)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to prepare manifests from source pathCollection %q: %w", source, err)
 		}
+		objects = append(objects, o...)
 	}
 
 	return objects, nil
 }
 
-func prepareKubernetesManifests(applicationSource argo.ApplicationSource) ([]k8s.Object, error) {
-	realPath := os.DirFS("../" + applicationSource.Path)
+func prepareKubernetesManifests(ctx context.Context, path string) ([]k8s.Object, error) {
+	manifestPath := filepath.Join("..", path)
+	manifestFS := os.DirFS(manifestPath)
 
-	objects, err := decoder.DecodeAllFiles(context.TODO(), realPath, "*.yaml")
+	objects, err := decoder.DecodeAllFiles(ctx, manifestFS, "*.yaml")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode YAML files from path %q: %w", manifestPath, err)
 	}
 	return objects, nil
 }

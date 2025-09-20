@@ -50,3 +50,21 @@ func GetArgoApplicationFromGit(gitRepository string, applicationYaml string) (Ap
 
 	return *argoApplication, nil
 }
+
+func GatherArgoAppPaths(app Application) (
+	pathCollection []string,
+) {
+	if app.Spec.Sources != nil {
+		for _, source := range app.Spec.Sources {
+			if source.Path != "" {
+				pathCollection = append(pathCollection, source.Path)
+			}
+		}
+	}
+
+	if app.Spec.Source != nil && app.Spec.Source.Path != "" {
+		pathCollection = append(pathCollection, app.Spec.Source.Path)
+	}
+
+	return pathCollection
+}

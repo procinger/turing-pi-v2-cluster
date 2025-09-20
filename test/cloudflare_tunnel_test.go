@@ -24,7 +24,7 @@ metadata:
   name: %s
 
 `
-	current, _, additionalManifests, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/cloudflare-tunnel.yaml")
+	current, _, additionalManifests, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/cloudflare-tunnel.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}

@@ -15,12 +15,12 @@ import (
 )
 
 func TestIstio(t *testing.T) {
-	istioCurrent, istioUpdate, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/istio.yaml")
+	istioCurrent, istioUpdate, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}
 
-	gatewayCurrent, gatewayUpdate, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/istio-gateway.yaml")
+	gatewayCurrent, gatewayUpdate, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/istio-gateway.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare test #%v", err)
 	}

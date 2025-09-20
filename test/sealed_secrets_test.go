@@ -11,7 +11,7 @@ import (
 )
 
 func TestSealedSecrets(t *testing.T) {
-	sealedCurrent, sealedUpdate, _, err := e2eutils.PrepareArgoApp(gitRepository, "../kubernetes-services/templates/sealed-secrets.yaml")
+	sealedCurrent, sealedUpdate, _, err := e2eutils.PrepareArgoApp(t.Context(), gitRepository, "../kubernetes-services/templates/sealed-secrets.yaml")
 	if err != nil {
 		t.Fatalf("Failed to prepare sealed secret test #%v", err)
 	}
