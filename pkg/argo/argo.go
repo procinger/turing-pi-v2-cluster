@@ -11,7 +11,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func GetArgoApplication(applicationYaml string) (Application, error) {
+func GetArgoApplication(applicationYaml string) (
+	Application,
+	error,
+) {
 	yamlFile, err := os.ReadFile(applicationYaml)
 	if err != nil {
 		return Application{}, errors.New("Failed to open application yaml file " + applicationYaml + ". " + err.Error())
@@ -26,7 +29,10 @@ func GetArgoApplication(applicationYaml string) (Application, error) {
 	return *argoApplication, nil
 }
 
-func GetArgoApplicationFromGit(gitRepository string, applicationYaml string) (Application, error) {
+func GetArgoApplicationFromGit(gitRepository string, applicationYaml string) (
+	Application,
+	error,
+) {
 	baseUrl := gitRepository + strings.TrimPrefix(applicationYaml, "../")
 	response, err := http.Get(baseUrl)
 	if err != nil {

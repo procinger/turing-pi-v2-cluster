@@ -37,12 +37,12 @@ func PrepareArgoApp(ctx context.Context, gitRepository string, applicationYaml s
 	ArgoTest,
 	error,
 ) {
-	currGitBranch, err := GetCurrentGitBranch()
+	workingBranch, err := GetCurrentGitBranch()
 	if err != nil {
 		return ArgoTest{}, err
 	}
 
-	currentSettings, err := buildAppNode(ctx, applicationYaml)
+	currentSettings, err := buildAppNode(ctx, applicationYaml, gitRepository, "main")
 	if err != nil {
 		return ArgoTest{}, err
 	}
@@ -51,18 +51,17 @@ func PrepareArgoApp(ctx context.Context, gitRepository string, applicationYaml s
 		Current: currentSettings,
 	}
 
-	// when we are working on the main branch, we don't need to fetch the Update state
-	if currGitBranch == "main" {
+	// when we are working on the main branch, we don't want to fetch the Update state
+	if workingBranch == "main" {
 		return argoTest, nil
 	}
 
-	updateSettings, err := buildAppNode(ctx, applicationYaml)
+	argoTest.Update, err = buildAppNode(ctx, applicationYaml, gitRepository, workingBranch)
 	if err != nil {
 		return ArgoTest{}, err
 	}
-	argoTest.Update = updateSettings
 
-	// if both nodes are equal, we don't need to test the update state
+	// if both nodes are equal, we don't want to test the update state
 	if reflect.DeepEqual(argoTest.Current, argoTest.Update) {
 		argoTest.Update = AppSettings{}
 	}
@@ -70,11 +69,19 @@ func PrepareArgoApp(ctx context.Context, gitRepository string, applicationYaml s
 	return argoTest, nil
 }
 
-func buildAppNode(ctx context.Context, applicationYaml string) (
+func buildAppNode(ctx context.Context, applicationYaml string, gitRepository string, branch string) (
 	AppSettings,
 	error,
 ) {
-	app, err := argo.GetArgoApplication(applicationYaml)
+	var app argo.Application
+	var err error
+
+	if branch == "main" {
+		app, err = argo.GetArgoApplicationFromGit(gitRepository, applicationYaml)
+	} else {
+		app, err = argo.GetArgoApplication(applicationYaml)
+	}
+
 	if err != nil {
 		return AppSettings{}, err
 	}
