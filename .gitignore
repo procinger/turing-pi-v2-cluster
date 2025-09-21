@@ -3,7 +3,7 @@
 kubeconfig
 hosts.yml
 vendor/*
-tls.crt
-tls.key
-public-key-cert.pem
+*.crt
+*.key
+*.pem
 **/kind-logs
