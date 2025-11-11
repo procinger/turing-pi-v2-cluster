@@ -3,6 +3,6 @@ kind: Kustomization
 
 resources:
   # renovate: datasource=github-releases depName=rancher/system-upgrade-controller
-  - https://github.com/rancher/system-upgrade-controller/releases/download/v0.17.0/crd.yaml
-  - https://github.com/rancher/system-upgrade-controller?ref=v0.17.0
+  - https://github.com/rancher/system-upgrade-controller/releases/download/v0.18.0/crd.yaml
+  - https://github.com/rancher/system-upgrade-controller?ref=v0.18.0
   - upgrade-plan.yaml
