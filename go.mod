@@ -1,4 +1,4 @@
-module test
+module e2eutils
 
 go 1.24.0
 
