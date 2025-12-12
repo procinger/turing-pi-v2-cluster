@@ -2,12 +2,13 @@ package test
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/e2e-framework/pkg/envconf"
-	"sigs.k8s.io/e2e-framework/pkg/features"
 	"strings"
 	"test/test/pkg/test"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/e2e-framework/pkg/envconf"
+	"sigs.k8s.io/e2e-framework/pkg/features"
 )
 
 func TestPrometheus(t *testing.T) {
@@ -95,7 +96,7 @@ func TestPrometheus(t *testing.T) {
 		t.Fatalf("Failed to get kubernetes client #%v", err)
 	}
 
-	install := features.
+	_ = features.
 		New("Deploying Prometheus Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			err = test.DeployHelmCharts(cfg.KubeconfigFile(), promCurrent)
@@ -147,5 +148,5 @@ func TestPrometheus(t *testing.T) {
 			}).
 		Feature()
 
-	ciTestEnv.Test(t, install, upgrade)
+	ciTestEnv.Test(t, upgrade)
 }

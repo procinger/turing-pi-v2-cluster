@@ -62,9 +62,6 @@ spec:
           grafana:
             deploymentStrategy:
               type: Recreate
-            grafana.ini:
-              server:
-                serve_from_sub_path: true
             persistence:
               enabled: true
               type: pvc
@@ -91,6 +88,8 @@ spec:
       targetRevision: 2.10.3
       helm:
         values: |
+          loki:
+            isDefault: false
           grafana:
             enabled: false
           prometheus:
