@@ -96,7 +96,7 @@ func TestPrometheus(t *testing.T) {
 		t.Fatalf("Failed to get kubernetes client #%v", err)
 	}
 
-	_ = features.
+	install := features.
 		New("Deploying Prometheus Helm Chart").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			err = test.DeployHelmCharts(cfg.KubeconfigFile(), promCurrent)
@@ -148,5 +148,5 @@ func TestPrometheus(t *testing.T) {
 			}).
 		Feature()
 
-	ciTestEnv.Test(t, upgrade)
+	ciTestEnv.Test(t, install, upgrade)
 }
