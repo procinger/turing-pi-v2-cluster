@@ -13,9 +13,11 @@ spec:
   source:
     chart: argo-rollouts
     repoURL: https://argoproj.github.io/argo-helm
-    targetRevision: 2.40.4
+    targetRevision: 2.40.5
     helm:
       values: |
+        controller:
+          replicas: 1
         dashboard:
           enabled: true
   syncPolicy:

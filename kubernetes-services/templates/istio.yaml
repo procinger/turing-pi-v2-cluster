@@ -18,7 +18,7 @@ spec:
   sources:
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: base
-      targetRevision: 1.27.1
+      targetRevision: 1.28.2
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: istiod
       helm:
@@ -39,10 +39,10 @@ spec:
               tracing:
                 zipkin:
                   address: "istio-system-jaeger-collector.istio-system:9411"
-      targetRevision: 1.27.1
+      targetRevision: 1.28.2
     - repoURL: https://kiali.org/helm-charts
       chart: kiali-server
-      targetRevision: 2.15.0
+      targetRevision: 2.20.0
       helm:
         values: |
           clustering:
@@ -57,9 +57,9 @@ spec:
               url: "http://prometheus-kube-prometheus-prometheus.monitoring:9090/"
             grafana:
               enabled: true
-              in_cluster_url: "http://prometheus-grafana.monitoring:80"
+              internal_url: "http://prometheus-grafana.monitoring:80"
             tracing:
-              in_cluster_url: "http://istio-system-jaeger-query:16685/jaeger"
+              internal_ur: "http://istio-system-jaeger-query:16685/jaeger"
               use_grpc: true
             istio:
               root_namespace: istio-system
@@ -74,7 +74,7 @@ spec:
                   namespace: istio-gateway
     - repoURL: https://jaegertracing.github.io/helm-charts
       chart: jaeger
-      targetRevision: 3.4.1
+      targetRevision: 4.2.2
       helm:
         values: |
           query:

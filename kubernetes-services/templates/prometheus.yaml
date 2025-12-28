@@ -13,7 +13,7 @@ spec:
   sources:
     - chart: kube-prometheus-stack
       repoURL: https://prometheus-community.github.io/helm-charts
-      targetRevision: 77.10.0
+      targetRevision: 80.8.0
       helm:
         values: |
           prometheusOperator:
@@ -59,12 +59,6 @@ spec:
                     resources:
                       requests:
                         storage: 5Gi
-          grafana:
-            deploymentStrategy:
-              type: Recreate
-            grafana.ini:
-              server:
-                serve_from_sub_path: true
             persistence:
               enabled: true
               type: pvc
@@ -88,9 +82,11 @@ spec:
       targetRevision: main
     - chart: loki-stack
       repoURL: https://grafana.github.io/helm-charts
-      targetRevision: 2.10.2
+      targetRevision: 2.10.3
       helm:
         values: |
+          loki:
+            isDefault: false
           grafana:
             enabled: false
           prometheus:

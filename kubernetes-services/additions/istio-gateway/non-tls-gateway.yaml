@@ -2,6 +2,9 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: non-tls-gateway
+  annotations:
+    argocd.argoproj.io/sync-wave: "100"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   selector:
     istio: gateway

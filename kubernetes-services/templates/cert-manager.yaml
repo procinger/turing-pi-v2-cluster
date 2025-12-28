@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: cert-manager
   namespace: argo-cd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -13,7 +15,7 @@ spec:
   sources:
     - repoURL: https://charts.jetstack.io
       chart: cert-manager
-      targetRevision: v1.18.2
+      targetRevision: v1.19.2
       helm:
         values: |
           prometheus:

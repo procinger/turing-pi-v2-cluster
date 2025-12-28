@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: snapshot-controller
   namespace: argo-cd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -13,7 +15,7 @@ spec:
   sources:
     - chart: snapshot-controller
       repoURL: https://piraeus.io/helm-charts/
-      targetRevision: 4.1.0
+      targetRevision: 4.2.0
   syncPolicy:
     automated:
       prune: true
