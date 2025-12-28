@@ -16,6 +16,8 @@ spec:
     targetRevision: 2.40.5
     helm:
       values: |
+        controller:
+          replicas: 1
         dashboard:
           enabled: true
   syncPolicy:

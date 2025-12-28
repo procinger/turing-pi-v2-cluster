@@ -59,9 +59,6 @@ spec:
                     resources:
                       requests:
                         storage: 5Gi
-          grafana:
-            deploymentStrategy:
-              type: Recreate
             persistence:
               enabled: true
               type: pvc

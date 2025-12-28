@@ -3,7 +3,7 @@ kind: ClusterIssuer
 metadata:
   name: issuer-self-signed
   annotations:
-    "helm.sh/hook": "post-install"
     argocd.argoproj.io/sync-wave: "100"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   selfSigned: {}
