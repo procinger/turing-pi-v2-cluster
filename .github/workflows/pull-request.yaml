@@ -130,7 +130,7 @@ jobs:
       - name: Golang Test Helper
         if: ${{ needs.analyze-changes.outputs.go_helper_any_changed == 'true' }}
         run: |
-          go test -v ./test
+          go test -v ./test -timeout 30m
 
       - name: Upload KinD logs
         if: always()

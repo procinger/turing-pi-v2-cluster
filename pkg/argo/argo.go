@@ -5,12 +5,16 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"sigs.k8s.io/yaml"
 	"strconv"
 	"strings"
+
+	"sigs.k8s.io/yaml"
 )
 
-func GetArgoApplication(applicationYaml string) (Application, error) {
+func GetArgoApplication(applicationYaml string) (
+	Application,
+	error,
+) {
 	yamlFile, err := os.ReadFile(applicationYaml)
 	if err != nil {
 		return Application{}, errors.New("Failed to open application yaml file " + applicationYaml + ". " + err.Error())
@@ -25,7 +29,10 @@ func GetArgoApplication(applicationYaml string) (Application, error) {
 	return *argoApplication, nil
 }
 
-func GetArgoApplicationFromGit(gitRepository string, applicationYaml string) (Application, error) {
+func GetArgoApplicationFromGit(gitRepository string, applicationYaml string) (
+	Application,
+	error,
+) {
 	baseUrl := gitRepository + strings.TrimPrefix(applicationYaml, "../")
 	response, err := http.Get(baseUrl)
 	if err != nil {
@@ -48,4 +55,22 @@ func GetArgoApplicationFromGit(gitRepository string, applicationYaml string) (Ap
 	}
 
 	return *argoApplication, nil
+}
+
+func GatherArgoAppPaths(app Application) (
+	pathCollection []string,
+) {
+	if app.Spec.Sources != nil {
+		for _, source := range app.Spec.Sources {
+			if source.Path != "" {
+				pathCollection = append(pathCollection, source.Path)
+			}
+		}
+	}
+
+	if app.Spec.Source != nil && app.Spec.Source.Path != "" {
+		pathCollection = append(pathCollection, app.Spec.Source.Path)
+	}
+
+	return pathCollection
 }
