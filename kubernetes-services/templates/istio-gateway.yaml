@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: istio-gateway
   namespace: argo-cd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -17,9 +19,6 @@ spec:
       helm:
         values: |
           platform: ""
-    - path: ./config/crd/experimental
-      repoURL: https://github.com/kubernetes-sigs/gateway-api.git
-      targetRevision: v1.2.0
     - path: ./kubernetes-services/additions/istio-gateway
       repoURL: https://github.com/procinger/turing-pi-v2-cluster.git
       targetRevision: main

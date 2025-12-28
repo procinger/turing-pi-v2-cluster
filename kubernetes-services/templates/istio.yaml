@@ -57,9 +57,9 @@ spec:
               url: "http://prometheus-kube-prometheus-prometheus.monitoring:9090/"
             grafana:
               enabled: true
-              in_cluster_url: "http://prometheus-grafana.monitoring:80"
+              internal_url: "http://prometheus-grafana.monitoring:80"
             tracing:
-              in_cluster_url: "http://istio-system-jaeger-query:16685/jaeger"
+              internal_ur: "http://istio-system-jaeger-query:16685/jaeger"
               use_grpc: true
             istio:
               root_namespace: istio-system

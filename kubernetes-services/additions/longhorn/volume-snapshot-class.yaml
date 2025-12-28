@@ -4,6 +4,8 @@ metadata:
   name: longhorn
   annotations:
     snapshot.storage.kubernetes.io/is-default-class: 'true'
+    argocd.argoproj.io/sync-wave: "100"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 driver: driver.longhorn.io
 deletionPolicy: Delete
 parameters:
