@@ -36,8 +36,8 @@ github.com/go-errors/errors v1.5.1 h1:ZwEMSLRCapFLflTpT7NKaAc7ukJ8ZPEjzlxt8rPN8b
 github.com/go-errors/errors v1.5.1/go.mod h1:sIVyrIiJhuEF+Pj9Ebtd6P/rEYROXFi3BopGUQ5a5Og=
 github.com/go-git/gcfg/v2 v2.0.2 h1:MY5SIIfTGGEMhdA7d7JePuVVxtKL7Hp+ApGDJAJ7dpo=
 github.com/go-git/gcfg/v2 v2.0.2/go.mod h1:/lv2NsxvhepuMrldsFilrgct6pxzpGdSRC13ydTLSLs=
-github.com/go-git/go-billy/v6 v6.0.0-20251209065551-8afc3eb64e4d h1:nfZPVEha54DwXl8twSNxi9J8edIiqfpSvnq/mGPfgc4=
-github.com/go-git/go-billy/v6 v6.0.0-20251209065551-8afc3eb64e4d/go.mod h1:d3XQcsHu1idnquxt48kAv+h+1MUiYKLH/e7LAzjP+pI=
+github.com/go-git/go-billy/v6 v6.0.0-20251217170237-e9738f50a3cd h1:Gd/f9cGi/3h1JOPaa6er+CkKUGyGX2DBJdFbDKVO+R0=
+github.com/go-git/go-billy/v6 v6.0.0-20251217170237-e9738f50a3cd/go.mod h1:d3XQcsHu1idnquxt48kAv+h+1MUiYKLH/e7LAzjP+pI=
 github.com/go-git/go-git-fixtures/v5 v5.1.2-0.20251217095811-6900f24224b3 h1:2+1ySCKPEu78+LWKsMa5vu2iYJJUdv4+6lQCu8Qb+VY=
 github.com/go-git/go-git-fixtures/v5 v5.1.2-0.20251217095811-6900f24224b3/go.mod h1:0mL/38Gupl98cI/OAAF+inDRhyKM9ic5FLuIY+zCTCE=
 github.com/go-git/go-git/v6 v6.0.0-20251224103503-78aff6aa5ea9 h1:cDz7iq3eC2Z6Ar7uXu+kVn462YN9oeZf6PdKBLdraYE=
