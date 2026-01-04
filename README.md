@@ -19,7 +19,6 @@ Includes tools and operators
 - [Kured](https://github.com/kubereboot/kured)
 - [Cert Manager](https://github.com/cert-manager/cert-manager)
 - [Argo Rollouts](https://github.com/argoproj/argo-rollouts)
-- [Kargo.io](https://github.com/akuity/kargo)
 
 # Install
 ## Prerequisites
@@ -103,7 +102,7 @@ So that we do not always have to connect to the RK1 modules to execute `kubectl`
 Afterwards we have to change the cluster IP address in the `kubeconfig`.
 
 ```
-scp ubuntu@ip-of-rk1-module:~/.kube/config .kubeconfig
+scp ubuntu@<ip-of-rk1-module>:~/.kube/config .kubeconfig
 ```
 
 Open the `kubeconfig` with a text editor of your choice and replace the IP address of the cluster.
@@ -157,18 +156,12 @@ If you prefer to use the terminal, you can log in with the argocd cli tool using
 $ argocd login <ip-of-a-node>:443 --grpc-web-root-path argocd
 ```
 
-### Kargo.io
-At the moment there is no possibility to create a random password in the Kargo.io Helm Chart. Therefore, `kargo` is
-created as admin password during installation.
-
-Create a port forward to the service and access the dashboard at https://localhost:8080
-```
-$ kubectl -n kargo port-forward svc/kargo-api 8080:443
-```
-
 ### Grafana
-In the Prometheus Kube stack, the credentials have not been changed and are default. You can log in to the dashboard 
-using the username `admin` and password `prom-operator`.
+Grafana creates a random password each time it is installed.
+```
+kubectl -n monitoring get secrets prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 -d 
+9fGNVkxO07fTxeFLheS2oxjzJAFrxIdkIiAXYTqg 
+```
 
 Create a port forward to the service and access Grafana via Browser at http://localhost:8099
 ```
@@ -236,4 +229,4 @@ It is also possible to create your own certificates and use them to encrypt secr
 
 ---
 
-![title](images/turing.jpg)
+![turing-pi2](images/turing.jpg)
