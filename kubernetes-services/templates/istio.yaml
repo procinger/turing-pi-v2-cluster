@@ -74,7 +74,7 @@ spec:
                   namespace: istio-gateway
     - repoURL: https://jaegertracing.github.io/helm-charts
       chart: jaeger
-      targetRevision: 4.3.3
+      targetRevision: 4.3.4
       helm:
         values: |
           query:
