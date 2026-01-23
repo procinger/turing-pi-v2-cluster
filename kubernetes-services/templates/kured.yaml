@@ -13,7 +13,7 @@ spec:
   source:
     chart: kured
     repoURL: https://kubereboot.github.io/charts
-    targetRevision: 5.10.0
+    targetRevision: 5.11.0
     helm:
       values: |
         resources:
