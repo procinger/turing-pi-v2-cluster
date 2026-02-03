@@ -144,6 +144,7 @@ jobs:
     needs: analyze-changes
     if: ${{ needs.analyze-changes.outputs.apps_any_changed == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: write
@@ -168,7 +169,7 @@ jobs:
             -v $(pwd)/output:/output \
             -e TARGET_BRANCH=${{ github.head_ref }} \
             -e REPO=${{ github.repository }} \
-            dagandersen/argocd-diff-preview:v0.0.25
+            dagandersen/argocd-diff-preview:v0.1.23
 
       - name: Post diff as comment
         run: |
