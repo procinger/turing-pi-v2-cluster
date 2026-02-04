@@ -2,7 +2,7 @@ module e2eutils
 
 go 1.25.0
 
-toolchain go1.25.6
+toolchain go1.25.7
 
 require (
 	github.com/go-git/go-git/v6 v6.0.0-20260127175347-b5117ad1603d
