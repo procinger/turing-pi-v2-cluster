@@ -15,7 +15,7 @@ spec:
   sources:
     - chart: snapshot-controller
       repoURL: https://piraeus.io/helm-charts/
-      targetRevision: 4.2.0
+      targetRevision: 5.0.2
   syncPolicy:
     automated:
       prune: true
