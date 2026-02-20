@@ -5,7 +5,7 @@ go 1.25.0
 toolchain go1.26.0
 
 require (
-	github.com/go-git/go-git/v6 v6.0.0-20260217223433-8b943fe3eb84
+	github.com/go-git/go-git/v6 v6.0.0-20260220113129-c02711164eb8
 	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.4.0
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
