@@ -6,7 +6,7 @@ toolchain go1.26.3
 
 require (
 	github.com/go-git/go-git/v6 v6.0.0-alpha.4
-	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.4.0
+	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.6.0
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.36.1
