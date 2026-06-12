@@ -18,10 +18,6 @@ spec:
       targetRevision: 1.12.0
       helm:
         values: |
-          image:
-            longhorn:
-              manager:
-                tag: v1.11.0-hotfix-1
           preUpgradeChecker:
             jobEnabled: false
             upgradeVersionCheck: false
