@@ -35,7 +35,7 @@ require (
 	github.com/go-git/go-billy/v6 v6.0.0-alpha.2 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-openapi/jsonpointer v1.0.0 // indirect
-	github.com/go-openapi/jsonreference v1.0.0 // indirect
+	github.com/go-openapi/jsonreference v1.0.1 // indirect
 	github.com/go-openapi/swag v0.29.1 // indirect
 	github.com/go-openapi/swag/cmdutils v0.29.1 // indirect
 	github.com/go-openapi/swag/conv v0.29.1 // indirect
