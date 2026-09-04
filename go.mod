@@ -1,6 +1,6 @@
 module e2eutils
 
-go 1.26.0
+go 1.27
 
 toolchain go1.27.1
 
@@ -94,4 +94,5 @@ require (
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v7 v7.0.0 // indirect
 )
